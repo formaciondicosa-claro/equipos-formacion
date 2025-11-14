@@ -9,10 +9,8 @@
 
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-  <!-- CONTENEDOR PRINCIPAL -->
   <div class="max-w-4xl mx-auto px-4 py-6">
 
-    <!-- HEADER -->
     <header class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-xl font-bold">📦 Control de Equipos</h1>
@@ -92,18 +90,27 @@
         <div id="lista-prestados" class="space-y-2"></div>
       </div>
 
+      <!-- LISTA EQUIPOS + BOTÓN LIMPIAR DUPLICADOS -->
       <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-        <h2 class="text-sm font-semibold mb-2">Equipos registrados</h2>
+        <div class="flex justify-between items-center mb-2">
+          <h2 class="text-sm font-semibold">Equipos registrados</h2>
+          <button onclick="window.limpiarDuplicados()"
+            class="text-[11px] px-2 py-1 bg-purple-600 hover:bg-purple-500 rounded-full">
+            Limpiar duplicados
+          </button>
+        </div>
+
         <div id="lista-equipos" class="space-y-1 text-xs"></div>
       </div>
 
     </section>
   </div>
 
-  <!-- FIREBASE SDK (MODULAR) -->
+  <!-- FIREBASE SDK MODULAR -->
   <script type="module">
-    // ---- IMPORTS ----
+
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+
     import {
       getAuth,
       GoogleAuthProvider,
@@ -111,6 +118,7 @@
       signOut,
       onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+
     import {
       getFirestore,
       collection,
@@ -118,10 +126,10 @@
       addDoc,
       onSnapshot,
       updateDoc,
+      deleteDoc,
       doc
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-    // ---- CONFIGURACIÓN FIREBASE ----
     const firebaseConfig = {
       apiKey: "AIzaSyBCLna-fGM4c7cpUcHnZzUY01Jfkk22u3A",
       authDomain: "equipos-de-formacion.firebaseapp.com",
@@ -136,7 +144,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // ---- DATOS PREDEFINIDOS ----
+    const ADMIN_EMAIL = "formaciondicosa@gmail.com";
+
     const FORMADORES = [
       { nombre: "Duber Herney Muñoz Ramos", email: "duber.munoz@dico.com.co" },
       { nombre: "Jose Daniel Rubiano Rodriguez", email: "jose.rubiano@dico.com.co" },
@@ -156,52 +165,47 @@
       { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160052734" }
     ];
 
-    const ADMIN_EMAIL = "formaciondicosa@gmail.com";
-
-    // ---- REFERENCIAS UI ----
+    // ---------------------
+    // UI REFERENCES
+    // ---------------------
     const loginView = document.getElementById("login-view");
     const formadorView = document.getElementById("formador-view");
     const adminView = document.getElementById("admin-view");
 
     const loginBtn = document.getElementById("login-btn");
     const logoutBtn = document.getElementById("logout-btn");
-    const userInfo = document.getElementById("user-info");
     const userEmailEl = document.getElementById("user-email");
+    const userInfo = document.getElementById("user-info");
 
     const formadorSelect = document.getElementById("formador-select");
     const tipoEquipoForm = document.getElementById("tipo-equipo-form");
     const equipoForm = document.getElementById("equipo-form");
-    const fechaUsoInput = document.getElementById("fecha-uso");
-    const motivoInput = document.getElementById("motivo");
+    const fechaUso = document.getElementById("fecha-uso");
+    const motivo = document.getElementById("motivo");
     const formadorStatus = document.getElementById("formador-status");
     const btnEnviar = document.getElementById("btn-enviar-solicitud");
-    const misSolicitudesDiv = document.getElementById("mis-solicitudes");
+    const misSolicitudes = document.getElementById("mis-solicitudes");
 
     const listaPendientes = document.getElementById("lista-pendientes");
     const listaPrestados = document.getElementById("lista-prestados");
     const listaEquipos = document.getElementById("lista-equipos");
 
-    // --------------------------------------------------
-    // LOGIN / LOGOUT
-    // --------------------------------------------------
-    loginBtn.onclick = async () => {
-      try {
-        const provider = new GoogleAuthProvider();
-        await signInWithPopup(auth, provider);
-      } catch (err) {
-        console.error("Error login:", err);
-        alert("Error al iniciar sesión: " + err.message);
-      }
+    // ---------------------
+    // LOGIN
+    // ---------------------
+    loginBtn.onclick = () => {
+      const provider = new GoogleAuthProvider();
+      signInWithPopup(auth, provider).catch(e => console.error(e));
     };
 
     logoutBtn.onclick = () => signOut(auth);
 
     onAuthStateChanged(auth, async (user) => {
-      console.log("onAuthStateChanged:", user?.email);
+
       if (!user) {
         loginView.classList.remove("hidden");
-        formadorView.classList.add("hidden");
         adminView.classList.add("hidden");
+        formadorView.classList.add("hidden");
         userInfo.classList.add("hidden");
         return;
       }
@@ -210,8 +214,7 @@
       userInfo.classList.remove("hidden");
       userEmailEl.textContent = user.email;
 
-      // Semilla de equipos (solo primera vez)
-      await asegurarEquiposSemilla();
+      await asegurarEquipos();
 
       if (user.email === ADMIN_EMAIL) {
         adminView.classList.remove("hidden");
@@ -224,7 +227,7 @@
       }
     });
 
-    async function asegurarEquiposSemilla() {
+    async function asegurarEquipos() {
       const snap = await getDocs(collection(db, "equipos"));
       if (snap.empty) {
         for (const eq of EQUIPOS_SEMILLA) {
@@ -236,52 +239,50 @@
       }
     }
 
-    // --------------------------------------------------
+    // ---------------------
     // FORMADOR
-    // --------------------------------------------------
+    // ---------------------
     let cacheEquipos = [];
 
     async function iniciarFormador() {
-      // cargar formadores
+
       formadorSelect.innerHTML = "";
       FORMADORES.forEach(f => {
-        const opt = document.createElement("option");
-        opt.value = f.nombre;
-        opt.textContent = f.nombre;
-        formadorSelect.appendChild(opt);
+        const op = document.createElement("option");
+        op.value = f.nombre;
+        op.textContent = f.nombre;
+        formadorSelect.appendChild(op);
       });
 
-      await cargarEquiposForm();
-      escucharMisSolicitudes();
-    }
-
-    async function cargarEquiposForm() {
-      const snapshot = await getDocs(collection(db, "equipos"));
-      cacheEquipos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      const snap = await getDocs(collection(db, "equipos"));
+      cacheEquipos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
       const tipos = [...new Set(cacheEquipos.map(e => e.tipo))];
       tipoEquipoForm.innerHTML = "";
       tipos.forEach(t => {
-        const opt = document.createElement("option");
-        opt.value = t;
-        opt.textContent = t;
-        tipoEquipoForm.appendChild(opt);
+        const op = document.createElement("option");
+        op.value = t;
+        op.textContent = t;
+        tipoEquipoForm.appendChild(op);
       });
 
       tipoEquipoForm.onchange = llenarEquipos;
       llenarEquipos();
+
+      escucharSolicitudesFormador();
     }
 
     function llenarEquipos() {
       const tipo = tipoEquipoForm.value;
       equipoForm.innerHTML = "";
+
       cacheEquipos
         .filter(e => e.tipo === tipo && e.estado !== "prestado")
         .forEach(e => {
-          const opt = document.createElement("option");
-          opt.value = e.id;
-          opt.textContent = `${e.nombre} (${e.serie})`;
-          equipoForm.appendChild(opt);
+          const op = document.createElement("option");
+          op.value = e.id;
+          op.textContent = `${e.nombre} (${e.serie})`;
+          equipoForm.appendChild(op);
         });
     }
 
@@ -289,55 +290,53 @@
       const user = auth.currentUser;
       if (!user) return;
 
-      if (!equipoForm.value || !fechaUsoInput.value || !motivoInput.value.trim()) {
+      if (!equipoForm.value || !fechaUso.value || !motivo.value.trim()) {
         formadorStatus.textContent = "Completa todos los campos.";
         formadorStatus.className = "text-[11px] text-amber-400";
         return;
       }
 
-      const data = {
+      await addDoc(collection(db, "solicitudes"), {
         equipoId: equipoForm.value,
         formadorNombre: formadorSelect.value,
         formadorEmail: user.email,
-        fechaUso: fechaUsoInput.value,
-        motivo: motivoInput.value.trim(),
+        fechaUso: fechaUso.value,
+        motivo: motivo.value.trim(),
         estado: "pendiente",
         fechaSolicitud: new Date()
-      };
+      });
 
-      await addDoc(collection(db, "solicitudes"), data);
       formadorStatus.textContent = "Solicitud enviada.";
       formadorStatus.className = "text-[11px] text-emerald-400";
-      motivoInput.value = "";
+      motivo.value = "";
     };
 
-    function escucharMisSolicitudes() {
+    function escucharSolicitudesFormador() {
       const user = auth.currentUser;
-      if (!user) return;
-
       onSnapshot(collection(db, "solicitudes"), (snap) => {
-        misSolicitudesDiv.innerHTML = "";
+        misSolicitudes.innerHTML = "";
         snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(s => s.formadorEmail === user.email)
-          .sort((a, b) => (b.fechaSolicitud?.seconds || 0) - (a.fechaSolicitud?.seconds || 0))
           .forEach(s => {
             const div = document.createElement("div");
-            div.className = "border border-slate-700 rounded px-3 py-2";
+            div.className = "border border-slate-700 rounded px-4 py-2";
+
             div.innerHTML = `
               <div class="font-medium">${s.motivo}</div>
               <div class="text-[11px] text-slate-400">
                 Uso: ${s.fechaUso} • Estado: ${s.estado}
               </div>
             `;
-            misSolicitudesDiv.appendChild(div);
+
+            misSolicitudes.appendChild(div);
           });
       });
     }
 
-    // --------------------------------------------------
+    // ---------------------
     // ADMIN
-    // --------------------------------------------------
+    // ---------------------
     function iniciarAdmin() {
       escucharSolicitudesAdmin();
       escucharEquiposAdmin();
@@ -353,7 +352,9 @@
 
           if (s.estado === "pendiente") {
             const div = document.createElement("div");
+
             div.className = "border border-slate-700 rounded px-3 py-2";
+
             div.innerHTML = `
               <div class="font-medium">${s.motivo}</div>
               <div class="text-[11px] text-slate-400">
@@ -364,24 +365,29 @@
                 Entregar
               </button>
             `;
+
             listaPendientes.appendChild(div);
           }
 
           if (s.estado === "entregado") {
             const div = document.createElement("div");
-            div.className = "border border-slate-700 rounded px-3 py-2 flex justify-between items-center";
+
+            div.className = "border border-slate-700 rounded px-3 py-2 flex justify-between";
+
             div.innerHTML = `
               <div>
                 <div class="font-medium">${s.motivo}</div>
                 <div class="text-[11px] text-slate-400">
-                  ${s.formadorNombre} (${s.formadorEmail})
+                  ${s.formadorNombre}
                 </div>
               </div>
+
               <button class="px-3 py-1 bg-emerald-600 rounded-full text-xs"
                 onclick="window.marcarDevuelto('${s.id}','${s.equipoId}')">
                 Devuelto
               </button>
             `;
+
             listaPrestados.appendChild(div);
           }
         });
@@ -390,23 +396,28 @@
 
     function escucharEquiposAdmin() {
       onSnapshot(collection(db, "equipos"), (snap) => {
+
         listaEquipos.innerHTML = "";
+
         snap.docs.forEach(d => {
           const e = d.data();
           const div = document.createElement("div");
-          div.className = "border border-slate-700 rounded px-3 py-1 flex justify-between";
+
+          div.className = "border border-slate-700 rounded px-3 py-2 flex justify-between";
+
           div.innerHTML = `
-            <span>${e.tipo} — ${e.nombre} (${e.serie})</span>
+            ${e.tipo} — ${e.nombre} (${e.serie})
             <span class="text-[10px] text-slate-400">${e.estado}</span>
           `;
+
           listaEquipos.appendChild(div);
         });
       });
     }
 
-    // --------------------------------------------------
-    // FUNCIONES GLOBALES ADMIN (window.*)
-    // --------------------------------------------------
+    // ---------------------
+    // ADMIN GLOBAL FUNCTIONS
+    // ---------------------
     window.aprobarSolicitud = async (solId, equipoId) => {
       await updateDoc(doc(db, "solicitudes", solId), { estado: "entregado" });
       await updateDoc(doc(db, "equipos", equipoId), { estado: "prestado" });
@@ -416,6 +427,50 @@
       await updateDoc(doc(db, "solicitudes", solId), { estado: "devuelto" });
       await updateDoc(doc(db, "equipos", equipoId), { estado: "disponible" });
     };
+
+    // ---------------------
+    // LIMPIAR DUPLICADOS POR SERIE
+    // ---------------------
+    window.limpiarDuplicados = async () => {
+
+      const equiposSnap = await getDocs(collection(db, "equipos"));
+      const solicitudesSnap = await getDocs(collection(db, "solicitudes"));
+
+      // Agrupar por serie
+      const mapa = {};
+      equiposSnap.docs.forEach(d => {
+        const e = d.data();
+        if (!mapa[e.serie]) mapa[e.serie] = [];
+        mapa[e.serie].push({ id: d.id, ...e });
+      });
+
+      let eliminados = 0;
+
+      for (const serie in mapa) {
+        const lista = mapa[serie];
+        if (lista.length <= 1) continue;
+
+        const original = lista[0];
+        const duplicados = lista.slice(1);
+
+        for (const dup of duplicados) {
+
+          solicitudesSnap.docs.forEach(async sol => {
+            if (sol.data().equipoId === dup.id) {
+              await updateDoc(doc(db, "solicitudes", sol.id), {
+                equipoId: original.id
+              });
+            }
+          });
+
+          await deleteDoc(doc(db, "equipos", dup.id));
+          eliminados++;
+        }
+      }
+
+      alert("✔ Duplicados eliminados: " + eliminados);
+    };
+
   </script>
 
 </body>
