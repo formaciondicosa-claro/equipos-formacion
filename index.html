@@ -9,416 +9,414 @@
 
 <body class="bg-slate-950 text-slate-100 min-h-screen">
 
-<div class="max-w-4xl mx-auto px-4 py-6">
+  <!-- CONTENEDOR PRINCIPAL -->
+  <div class="max-w-4xl mx-auto px-4 py-6">
 
-  <!-- HEADER -->
-  <header class="flex items-center justify-between mb-6">
-    <div>
-      <h1 class="text-xl font-bold">📦 Control de Equipos</h1>
-      <p class="text-xs text-slate-400">Mini app para solicitudes y control de préstamos</p>
-    </div>
+    <!-- HEADER -->
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">📦 Control de Equipos</h1>
+        <p class="text-xs text-slate-400">Mini app para solicitudes y control de préstamos</p>
+      </div>
 
-    <div id="user-info" class="hidden text-right text-xs text-slate-400">
-      <div id="user-email"></div>
-      <button id="logout-btn" class="mt-1 text-amber-400 underline">Cerrar sesión</button>
-    </div>
-  </header>
+      <div id="user-info" class="hidden text-right text-xs text-slate-400">
+        <div id="user-email"></div>
+        <button id="logout-btn" class="mt-1 text-amber-400 underline">Cerrar sesión</button>
+      </div>
+    </header>
 
-  <!-- LOGIN -->
-  <section id="login-view" class="mt-10">
-    <div class="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-700 text-center">
-      <p class="text-sm mb-4 text-slate-300">Inicia sesión con tu cuenta de Google.</p>
+    <!-- LOGIN -->
+    <section id="login-view" class="mt-10">
+      <div class="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-700 text-center">
+        <p class="text-sm mb-4 text-slate-300">
+          Inicia sesión con tu cuenta de Google.
+        </p>
+        <button id="login-btn"
+          class="px-4 py-2 bg-sky-600 rounded-full hover:bg-sky-500 text-sm">
+          Iniciar sesión con Google
+        </button>
+      </div>
+    </section>
 
-      <button id="login-btn"
-        class="px-4 py-2 bg-sky-600 rounded-full hover:bg-sky-500 text-sm">
-        Iniciar sesión con Google
-      </button>
-    </div>
-  </section>
+    <!-- FORMADOR -->
+    <section id="formador-view" class="hidden space-y-6">
 
-  <!-- FORMADOR -->
-  <section id="formador-view" class="hidden space-y-6">
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Nueva solicitud</h2>
 
-    <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <h2 class="text-sm font-semibold mb-2">Nueva solicitud</h2>
+        <label class="block text-xs mb-1">Formador</label>
+        <select id="formador-select"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs mb-2"></select>
 
-      <label class="block text-xs mb-1">Formador</label>
-      <select id="formador-select" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs mb-2"></select>
+        <label class="block text-xs mb-1">Tipo de equipo</label>
+        <select id="tipo-equipo-form"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs"></select>
 
-      <label class="block text-xs mb-1">Tipo de equipo</label>
-      <select id="tipo-equipo-form" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs"></select>
+        <label class="block text-xs mb-1 mt-2">Equipo</label>
+        <select id="equipo-form"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs"></select>
 
-      <label class="block text-xs mb-1 mt-2">Equipo</label>
-      <select id="equipo-form" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs"></select>
+        <label class="block text-xs mb-1 mt-2">Fecha de uso</label>
+        <input id="fecha-uso" type="date"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
 
-      <label class="block text-xs mb-1 mt-2">Fecha de uso</label>
-      <input id="fecha-uso" type="date" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+        <label class="block text-xs mb-1 mt-2">Motivo</label>
+        <input id="motivo" type="text"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
 
-      <label class="block text-xs mb-1 mt-2">Motivo</label>
-      <input id="motivo" type="text" class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+        <button id="btn-enviar-solicitud"
+          class="w-full mt-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-full text-xs">
+          Enviar solicitud
+        </button>
 
-      <button id="btn-enviar-solicitud"
-        class="w-full mt-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-full text-xs">
-        Enviar solicitud
-      </button>
+        <div id="formador-status" class="text-[11px] mt-2"></div>
+      </div>
 
-      <div id="formador-status" class="text-[11px] mt-2"></div>
-    </div>
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Mis solicitudes</h2>
+        <div id="mis-solicitudes" class="space-y-2"></div>
+      </div>
 
-    <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <h2 class="text-sm font-semibold mb-2">Mis solicitudes</h2>
-      <div id="mis-solicitudes" class="space-y-2"></div>
-    </div>
+    </section>
 
-  </section>
+    <!-- ADMIN -->
+    <section id="admin-view" class="hidden space-y-5">
 
-  <!-- ADMIN -->
-  <section id="admin-view" class="hidden space-y-5">
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Solicitudes pendientes</h2>
+        <div id="lista-pendientes" class="space-y-2"></div>
+      </div>
 
-    <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <h2 class="text-sm font-semibold mb-2">Solicitudes pendientes</h2>
-      <div id="lista-pendientes" class="space-y-2"></div>
-    </div>
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Equipos prestados</h2>
+        <div id="lista-prestados" class="space-y-2"></div>
+      </div>
 
-    <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <h2 class="text-sm font-semibold mb-2">Equipos prestados</h2>
-      <div id="lista-prestados" class="space-y-2"></div>
-    </div>
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Equipos registrados</h2>
+        <div id="lista-equipos" class="space-y-1 text-xs"></div>
+      </div>
 
-    <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
-      <h2 class="text-sm font-semibold mb-2">Equipos registrados</h2>
-      <div id="lista-equipos" class="space-y-1 text-xs"></div>
+    </section>
+  </div>
 
-      <!-- BOTÓN RESET -->
-      <button id="btn-reset"
-        class="w-full mt-3 py-2 bg-red-700 hover:bg-red-600 rounded-full text-sm">
-        🧹 Resetear sistema (borrar TODO)
-      </button>
-    </div>
+  <!-- FIREBASE SDK (MODULAR) -->
+  <script type="module">
+    // ---- IMPORTS ----
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth,
+      GoogleAuthProvider,
+      signInWithPopup,
+      signOut,
+      onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection,
+      getDocs,
+      addDoc,
+      onSnapshot,
+      updateDoc,
+      doc
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
 
-  </section>
+    // ---- CONFIGURACIÓN FIREBASE ----
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCLna-fGM4c7cpUcHnZzUY01Jfkk22u3A",
+      authDomain: "equipos-de-formacion.firebaseapp.com",
+      projectId: "equipos-de-formacion",
+      storageBucket: "equipos-de-formacion.appspot.com",
+      messagingSenderId: "249416438280",
+      appId: "1:249416438280:web:be76d25b13c7763abcb7bd",
+      measurementId: "G-TTJ1WJNZ2N"
+    };
 
-</div>
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
 
-<!-- FIREBASE SDK -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
-    from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-  import {
-    getFirestore, collection, getDocs, addDoc, onSnapshot,
-    updateDoc, doc, deleteDoc, getDoc
-  } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    // ---- DATOS PREDEFINIDOS ----
+    const FORMADORES = [
+      { nombre: "Duber Herney Muñoz Ramos", email: "duber.munoz@dico.com.co" },
+      { nombre: "Jose Daniel Rubiano Rodriguez", email: "jose.rubiano@dico.com.co" },
+      { nombre: "Miguel Oswaldo Gonzalez Castaño", email: "miguel.gonzalez@dico.com.co" },
+      { nombre: "Sebastian David Merchán Junca", email: "sebastian.merchan@dico.com.co" },
+      { nombre: "Nestor Jair Basante Apraez", email: "jair.basante@dico.com.co" },
+      { nombre: "Andres Felipe Tarazona", email: "andres.tarazon@dico.com.co" },
+      { nombre: "Juan Felipe Villamil Torres", email: "juan.villamil@dico.com.co" }
+    ];
 
-  // ---------------- FIREBASE CONFIG ----------------
-  const firebaseConfig = {
-    apiKey: "AIzaSyBCLna-fGM4c7cpUcHnZzUY01Jfkk22u3A",
-    authDomain: "equipos-de-formacion.firebaseapp.com",
-    projectId: "equipos-de-formacion",
-    storageBucket: "equipos-de-formacion.appspot.com",
-    messagingSenderId: "249416438280",
-    appId: "1:249416438280:web:be76d25b13c7763abcb7bd",
-    measurementId: "G-TTJ1WJNZ2N"
-  };
+    const EQUIPOS_SEMILLA = [
+      { tipo: "Medidor de campo", nombre: "Trilithic 360 Dsp", serie: "360624417" },
+      { tipo: "Decodificador", nombre: "Smart speaker", serie: "1" },
+      { tipo: "Decodificador", nombre: "Claro box", serie: "D4CFF998DF9" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160052873" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160053523" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160052734" }
+    ];
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth();
-  const db = getFirestore();
+    const ADMIN_EMAIL = "formaciondicosa@gmail.com";
 
-  // ---------------- DATOS ----------------
-  const ADMIN_EMAIL = "formaciondicosa@gmail.com";
+    // ---- REFERENCIAS UI ----
+    const loginView = document.getElementById("login-view");
+    const formadorView = document.getElementById("formador-view");
+    const adminView = document.getElementById("admin-view");
 
-  const FORMADORES = [
-    { nombre: "Duber Herney Muñoz Ramos", email: "duber.munoz@dico.com.co" },
-    { nombre: "Jose Daniel Rubiano Rodriguez", email: "jose.rubiano@dico.com.co" },
-    { nombre: "Miguel Oswaldo Gonzalez Castaño", email: "miguel.gonzalez@dico.com.co" },
-    { nombre: "Sebastian David Merchán Junca", email: "sebastian.merchan@dico.com.co" },
-    { nombre: "Nestor Jair Basante Apraez", email: "jair.basante@dico.com.co" },
-    { nombre: "Andres Felipe Tarazona", email: "andres.tarazon@dico.com.co" },
-    { nombre: "Juan Felipe Villamil Torres", email: "juan.villamil@dico.com.co" }
-  };
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userInfo = document.getElementById("user-info");
+    const userEmailEl = document.getElementById("user-email");
 
-  const EQUIPOS_SEMILLA = [
-    { tipo: "Medidor de campo", nombre: "Trilithic 360 Dsp", serie: "360624417" },
-    { tipo: "Mesh router", nombre: "Mesh Newland", serie: "810325160052873" },
-    { tipo: "Mesh router", nombre: "Mesh Newland", serie: "810325160053523" },
-    { tipo: "Decodificador", nombre: "Claro Box", serie: "D4CFF998DF9" }
-  ];
+    const formadorSelect = document.getElementById("formador-select");
+    const tipoEquipoForm = document.getElementById("tipo-equipo-form");
+    const equipoForm = document.getElementById("equipo-form");
+    const fechaUsoInput = document.getElementById("fecha-uso");
+    const motivoInput = document.getElementById("motivo");
+    const formadorStatus = document.getElementById("formador-status");
+    const btnEnviar = document.getElementById("btn-enviar-solicitud");
+    const misSolicitudesDiv = document.getElementById("mis-solicitudes");
 
-  // ---------------- REFERENCIAS HTML ----------------
-  const loginView = document.getElementById("login-view");
-  const formadorView = document.getElementById("formador-view");
-  const adminView = document.getElementById("admin-view");
+    const listaPendientes = document.getElementById("lista-pendientes");
+    const listaPrestados = document.getElementById("lista-prestados");
+    const listaEquipos = document.getElementById("lista-equipos");
 
-  const loginBtn = document.getElementById("login-btn");
-  const logoutBtn = document.getElementById("logout-btn");
-  const userInfo = document.getElementById("user-info");
-  const userEmailEl = document.getElementById("user-email");
+    // --------------------------------------------------
+    // LOGIN / LOGOUT
+    // --------------------------------------------------
+    loginBtn.onclick = async () => {
+      try {
+        const provider = new GoogleAuthProvider();
+        await signInWithPopup(auth, provider);
+      } catch (err) {
+        console.error("Error login:", err);
+        alert("Error al iniciar sesión: " + err.message);
+      }
+    };
 
-  const formadorSelect = document.getElementById("formador-select");
-  const tipoEquipoForm = document.getElementById("tipo-equipo-form");
-  const equipoForm = document.getElementById("equipo-form");
-  const fechaUso = document.getElementById("fecha-uso");
-  const motivo = document.getElementById("motivo");
-  const formadorStatus = document.getElementById("formador-status");
-  const btnEnviar = document.getElementById("btn-enviar-solicitud");
-  const misSolicitudes = document.getElementById("mis-solicitudes");
+    logoutBtn.onclick = () => signOut(auth);
 
-  const listaPendientes = document.getElementById("lista-pendientes");
-  const listaPrestados = document.getElementById("lista-prestados");
-  const listaEquipos = document.getElementById("lista-equipos");
-  const btnReset = document.getElementById("btn-reset");
+    onAuthStateChanged(auth, async (user) => {
+      console.log("onAuthStateChanged:", user?.email);
+      if (!user) {
+        loginView.classList.remove("hidden");
+        formadorView.classList.add("hidden");
+        adminView.classList.add("hidden");
+        userInfo.classList.add("hidden");
+        return;
+      }
 
-  // ---------------- LOGIN ----------------
-  loginBtn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
-  logoutBtn.onclick = () => signOut(auth);
+      loginView.classList.add("hidden");
+      userInfo.classList.remove("hidden");
+      userEmailEl.textContent = user.email;
 
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      loginView.classList.remove("hidden");
-      adminView.classList.add("hidden");
-      formadorView.classList.add("hidden");
-      userInfo.classList.add("hidden");
-      return;
-    }
+      // Semilla de equipos (solo primera vez)
+      await asegurarEquiposSemilla();
 
-    loginView.classList.add("hidden");
-    userInfo.classList.remove("hidden");
-    userEmailEl.textContent = user.email;
+      if (user.email === ADMIN_EMAIL) {
+        adminView.classList.remove("hidden");
+        formadorView.classList.add("hidden");
+        iniciarAdmin();
+      } else {
+        formadorView.classList.remove("hidden");
+        adminView.classList.add("hidden");
+        iniciarFormador();
+      }
+    });
 
-    // Cargar equipos semilla si Firestore está vacío
-    const equiposSnap = await getDocs(collection(db, "equipos"));
-    if (equiposSnap.empty) {
-      for (const eq of EQUIPOS_SEMILLA) {
-        await addDoc(collection(db, "equipos"), { ...eq, estado: "disponible" });
+    async function asegurarEquiposSemilla() {
+      const snap = await getDocs(collection(db, "equipos"));
+      if (snap.empty) {
+        for (const eq of EQUIPOS_SEMILLA) {
+          await addDoc(collection(db, "equipos"), {
+            ...eq,
+            estado: "disponible"
+          });
+        }
       }
     }
 
-    if (user.email === ADMIN_EMAIL) {
-      adminView.classList.remove("hidden");
-      formadorView.classList.add("hidden");
-      iniciarAdmin();
-    } else {
-      formadorView.classList.remove("hidden");
-      adminView.classList.add("hidden");
-      iniciarFormador();
-    }
-  });
+    // --------------------------------------------------
+    // FORMADOR
+    // --------------------------------------------------
+    let cacheEquipos = [];
 
-  // ---------------- FORMADOR ----------------
-  async function iniciarFormador() {
-    formadorSelect.innerHTML = "";
-    FORMADORES.forEach(f => {
-      const opt = document.createElement("option");
-      opt.value = f.nombre;
-      opt.textContent = f.nombre;
-      formadorSelect.appendChild(opt);
-    });
-
-    await cargarEquiposForm();
-    escucharMisSolicitudes();
-  }
-
-  async function cargarEquiposForm() {
-    const snap = await getDocs(collection(db, "equipos"));
-    const equipos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-
-    const tipos = [...new Set(equipos.map(e => e.tipo))];
-    tipoEquipoForm.innerHTML = "";
-    tipos.forEach(t => {
-      const opt = document.createElement("option");
-      opt.value = t;
-      opt.textContent = t;
-      tipoEquipoForm.appendChild(opt);
-    });
-
-    tipoEquipoForm.onchange = () => llenarEquipos(equipos);
-    llenarEquipos(equipos);
-  }
-
-  function llenarEquipos(equipos) {
-    const tipo = tipoEquipoForm.value;
-    equipoForm.innerHTML = "";
-    equipos
-      .filter(e => e.tipo === tipo && e.estado !== "prestado")
-      .forEach(e => {
+    async function iniciarFormador() {
+      // cargar formadores
+      formadorSelect.innerHTML = "";
+      FORMADORES.forEach(f => {
         const opt = document.createElement("option");
-        opt.value = e.id;
-        opt.textContent = `${e.nombre} (${e.serie})`;
-        equipoForm.appendChild(opt);
+        opt.value = f.nombre;
+        opt.textContent = f.nombre;
+        formadorSelect.appendChild(opt);
       });
-  }
 
-  btnEnviar.onclick = async () => {
-    const user = auth.currentUser;
-    if (!user) return;
-
-    const equipoId = equipoForm.value;
-    const formadorNombre = formadorSelect.value;
-    const fecha = fechaUso.value;
-    const motivoTexto = motivo.value.trim();
-
-    if (!equipoId || !formadorNombre || !fecha || !motivoTexto) {
-      formadorStatus.textContent = "Completa todos los campos.";
-      formadorStatus.className = "text-[11px] text-amber-400";
-      return;
+      await cargarEquiposForm();
+      escucharMisSolicitudes();
     }
 
-    // Obtener datos completos del equipo para guardarlos en la solicitud
-    const equipoDoc = await getDoc(doc(db, "equipos", equipoId));
-    if (!equipoDoc.exists()) {
-      formadorStatus.textContent = "Error: equipo no encontrado.";
-      formadorStatus.className = "text-[11px] text-red-400";
-      return;
-    }
-    const e = equipoDoc.data();
+    async function cargarEquiposForm() {
+      const snapshot = await getDocs(collection(db, "equipos"));
+      cacheEquipos = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
 
-    const data = {
-      equipoId,
-      tipoEquipo: e.tipo,
-      equipoNombre: e.nombre,
-      equipoSerie: e.serie,
-      formadorNombre,
-      formadorEmail: user.email,
-      fechaUso: fecha,
-      motivo: motivoTexto,
-      estado: "pendiente",
-      fechaSolicitud: new Date()
+      const tipos = [...new Set(cacheEquipos.map(e => e.tipo))];
+      tipoEquipoForm.innerHTML = "";
+      tipos.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        tipoEquipoForm.appendChild(opt);
+      });
+
+      tipoEquipoForm.onchange = llenarEquipos;
+      llenarEquipos();
+    }
+
+    function llenarEquipos() {
+      const tipo = tipoEquipoForm.value;
+      equipoForm.innerHTML = "";
+      cacheEquipos
+        .filter(e => e.tipo === tipo && e.estado !== "prestado")
+        .forEach(e => {
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          opt.textContent = `${e.nombre} (${e.serie})`;
+          equipoForm.appendChild(opt);
+        });
+    }
+
+    btnEnviar.onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      if (!equipoForm.value || !fechaUsoInput.value || !motivoInput.value.trim()) {
+        formadorStatus.textContent = "Completa todos los campos.";
+        formadorStatus.className = "text-[11px] text-amber-400";
+        return;
+      }
+
+      const data = {
+        equipoId: equipoForm.value,
+        formadorNombre: formadorSelect.value,
+        formadorEmail: user.email,
+        fechaUso: fechaUsoInput.value,
+        motivo: motivoInput.value.trim(),
+        estado: "pendiente",
+        fechaSolicitud: new Date()
+      };
+
+      await addDoc(collection(db, "solicitudes"), data);
+      formadorStatus.textContent = "Solicitud enviada.";
+      formadorStatus.className = "text-[11px] text-emerald-400";
+      motivoInput.value = "";
     };
 
-    await addDoc(collection(db, "solicitudes"), data);
+    function escucharMisSolicitudes() {
+      const user = auth.currentUser;
+      if (!user) return;
 
-    formadorStatus.textContent = "Solicitud enviada ✔️";
-    formadorStatus.className = "text-[11px] text-emerald-400";
-    motivo.value = "";
-  };
+      onSnapshot(collection(db, "solicitudes"), (snap) => {
+        misSolicitudesDiv.innerHTML = "";
+        snap.docs
+          .map(d => ({ id: d.id, ...d.data() }))
+          .filter(s => s.formadorEmail === user.email)
+          .sort((a, b) => (b.fechaSolicitud?.seconds || 0) - (a.fechaSolicitud?.seconds || 0))
+          .forEach(s => {
+            const div = document.createElement("div");
+            div.className = "border border-slate-700 rounded px-3 py-2";
+            div.innerHTML = `
+              <div class="font-medium">${s.motivo}</div>
+              <div class="text-[11px] text-slate-400">
+                Uso: ${s.fechaUso} • Estado: ${s.estado}
+              </div>
+            `;
+            misSolicitudesDiv.appendChild(div);
+          });
+      });
+    }
 
-  function escucharMisSolicitudes() {
-    const user = auth.currentUser;
+    // --------------------------------------------------
+    // ADMIN
+    // --------------------------------------------------
+    function iniciarAdmin() {
+      escucharSolicitudesAdmin();
+      escucharEquiposAdmin();
+    }
 
-    onSnapshot(collection(db, "solicitudes"), (snap) => {
-      misSolicitudes.innerHTML = "";
-      snap.docs
-        .filter(d => d.data().formadorEmail === user.email)
-        .forEach(docSnap => {
-          const s = docSnap.data();
-          const div = document.createElement("div");
-          div.className = "border border-slate-700 rounded px-3 py-2";
-          div.innerHTML = `
-            <div class="font-medium">${s.tipoEquipo} — ${s.equipoNombre}</div>
-            <div class="text-[11px] text-slate-400">Serie: ${s.equipoSerie}</div>
-            <div class="text-[11px] text-slate-400">Uso: ${s.fechaUso} • Estado: ${s.estado}</div>
-            <div class="text-[11px] text-slate-400">Motivo: ${s.motivo}</div>
-          `;
-          misSolicitudes.appendChild(div);
+    function escucharSolicitudesAdmin() {
+      onSnapshot(collection(db, "solicitudes"), (snap) => {
+        listaPendientes.innerHTML = "";
+        listaPrestados.innerHTML = "";
+
+        snap.docs.forEach(d => {
+          const s = { id: d.id, ...d.data() };
+
+          if (s.estado === "pendiente") {
+            const div = document.createElement("div");
+            div.className = "border border-slate-700 rounded px-3 py-2";
+            div.innerHTML = `
+              <div class="font-medium">${s.motivo}</div>
+              <div class="text-[11px] text-slate-400">
+                ${s.formadorNombre} (${s.formadorEmail})
+              </div>
+              <button class="w-full mt-2 py-1 bg-sky-600 rounded-full text-xs"
+                onclick="window.aprobarSolicitud('${s.id}','${s.equipoId}')">
+                Entregar
+              </button>
+            `;
+            listaPendientes.appendChild(div);
+          }
+
+          if (s.estado === "entregado") {
+            const div = document.createElement("div");
+            div.className = "border border-slate-700 rounded px-3 py-2 flex justify-between items-center";
+            div.innerHTML = `
+              <div>
+                <div class="font-medium">${s.motivo}</div>
+                <div class="text-[11px] text-slate-400">
+                  ${s.formadorNombre} (${s.formadorEmail})
+                </div>
+              </div>
+              <button class="px-3 py-1 bg-emerald-600 rounded-full text-xs"
+                onclick="window.marcarDevuelto('${s.id}','${s.equipoId}')">
+                Devuelto
+              </button>
+            `;
+            listaPrestados.appendChild(div);
+          }
         });
-    });
-  }
-
-  // ---------------- ADMIN ----------------
-  function iniciarAdmin() {
-    escucharSolicitudes();
-    escucharEquipos();
-  }
-
-  function escucharSolicitudes() {
-    onSnapshot(collection(db, "solicitudes"), (snap) => {
-      listaPendientes.innerHTML = "";
-      listaPrestados.innerHTML = "";
-
-      snap.docs.forEach(docSnap => {
-        const s = { id: docSnap.id, ...docSnap.data() };
-
-        if (s.estado === "pendiente") {
-          const div = document.createElement("div");
-          div.className = "border border-slate-700 rounded px-3 py-2";
-          div.innerHTML = `
-            <div class="font-medium">${s.tipoEquipo} — ${s.equipoNombre}</div>
-            <div class="text-[11px] text-slate-400">Serie: ${s.equipoSerie}</div>
-            <div class="text-[11px] text-slate-400 mt-1">
-              Formador: ${s.formadorNombre} (${s.formadorEmail})
-            </div>
-            <div class="text-[11px] text-slate-400">Uso: ${s.fechaUso}</div>
-            <div class="text-[11px] text-slate-400">Motivo: ${s.motivo}</div>
-            <button class="w-full mt-2 py-1 bg-sky-600 rounded-full text-xs"
-              onclick="aprobar('${s.id}','${s.equipoId}')">Entregar</button>
-          `;
-          listaPendientes.appendChild(div);
-        }
-
-        if (s.estado === "entregado") {
-          const div = document.createElement("div");
-          div.className = "border border-slate-700 rounded px-3 py-2";
-          div.innerHTML = `
-            <div class="font-medium">${s.tipoEquipo} — ${s.equipoNombre}</div>
-            <div class="text-[11px] text-slate-400">Serie: ${s.equipoSerie}</div>
-            <div class="text-[11px] text-slate-400 mt-1">
-              Entregado a: ${s.formadorNombre} (${s.formadorEmail})
-            </div>
-            <div class="text-[11px] text-slate-400">Uso: ${s.fechaUso}</div>
-            <div class="text-[11px] text-slate-400">Motivo: ${s.motivo}</div>
-            <button class="w-full mt-2 py-1 bg-emerald-600 rounded-full text-xs"
-              onclick="devolver('${s.id}','${s.equipoId}')">Marcar devuelto</button>
-          `;
-          listaPrestados.appendChild(div);
-        }
       });
-    });
-  }
+    }
 
-  function escucharEquipos() {
-    onSnapshot(collection(db, "equipos"), (snap) => {
-      listaEquipos.innerHTML = "";
-      snap.docs.forEach(d => {
-        const e = d.data();
-        const div = document.createElement("div");
-        div.className = "border border-slate-700 rounded px-3 py-1";
-        div.innerHTML = `
-          ${e.tipo} — ${e.nombre} (${e.serie})
-          <span class="text-[10px] text-slate-400 float-right">${e.estado}</span>
-        `;
-        listaEquipos.appendChild(div);
+    function escucharEquiposAdmin() {
+      onSnapshot(collection(db, "equipos"), (snap) => {
+        listaEquipos.innerHTML = "";
+        snap.docs.forEach(d => {
+          const e = d.data();
+          const div = document.createElement("div");
+          div.className = "border border-slate-700 rounded px-3 py-1 flex justify-between";
+          div.innerHTML = `
+            <span>${e.tipo} — ${e.nombre} (${e.serie})</span>
+            <span class="text-[10px] text-slate-400">${e.estado}</span>
+          `;
+          listaEquipos.appendChild(div);
+        });
       });
-    });
-  }
-
-  // ---------------- ADMIN: APROBAR / DEVOLVER ----------------
-  window.aprobar = async (solId, equipoId) => {
-    await updateDoc(doc(db, "solicitudes", solId), { estado: "entregado" });
-    await updateDoc(doc(db, "equipos", equipoId), { estado: "prestado" });
-  };
-
-  window.devolver = async (solId, equipoId) => {
-    await updateDoc(doc(db, "solicitudes", solId), { estado: "devuelto" });
-    await updateDoc(doc(db, "equipos", equipoId), { estado: "disponible" });
-  };
-
-  // ---------------- BOTÓN RESET ----------------
-  btnReset.onclick = async () => {
-    const confirmar = confirm("⚠️ Esto borrará TODOS los equipos y solicitudes. ¿Continuar?");
-    if (!confirmar) return;
-
-    // BORRAR EQUIPOS
-    const eqSnap = await getDocs(collection(db, "equipos"));
-    for (const d of eqSnap.docs) {
-      await deleteDoc(doc(db, "equipos", d.id));
     }
 
-    // BORRAR SOLICITUDES
-    const solSnap = await getDocs(collection(db, "solicitudes"));
-    for (const d of solSnap.docs) {
-      await deleteDoc(doc(db, "solicitudes", d.id));
-    }
+    // --------------------------------------------------
+    // FUNCIONES GLOBALES ADMIN (window.*)
+    // --------------------------------------------------
+    window.aprobarSolicitud = async (solId, equipoId) => {
+      await updateDoc(doc(db, "solicitudes", solId), { estado: "entregado" });
+      await updateDoc(doc(db, "equipos", equipoId), { estado: "prestado" });
+    };
 
-    // RECARGAR SEMILLA
-    for (const eq of EQUIPOS_SEMILLA) {
-      await addDoc(collection(db, "equipos"), { ...eq, estado: "disponible" });
-    }
-
-    alert("✔️ Sistema reiniciado correctamente.");
-  };
-
-</script>
+    window.marcarDevuelto = async (solId, equipoId) => {
+      await updateDoc(doc(db, "solicitudes", solId), { estado: "devuelto" });
+      await updateDoc(doc(db, "equipos", equipoId), { estado: "disponible" });
+    };
+  </script>
 
 </body>
 </html>
