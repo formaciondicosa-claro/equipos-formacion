@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <title>Control de Equipos – Formación</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+  <div class="max-w-5xl mx-auto px-4 py-6">
+
+    <!-- HEADER -->
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="text-xl font-bold">📦 Control de Equipos</h1>
+        <p class="text-xs text-slate-400">Mini app para solicitudes, equipos y materiales</p>
+      </div>
+      <div id="user-info" class="hidden text-right text-xs text-slate-400">
+        <div id="user-email"></div>
+        <button id="logout-btn" class="mt-1 text-amber-400 underline">Cerrar sesión</button>
+      </div>
+    </header>
+
+    <!-- LOGIN -->
+    <section id="login-view" class="mt-10">
+      <div class="bg-slate-900 p-6 rounded-2xl shadow-xl border border-slate-700 text-center">
+        <p class="text-sm mb-4 text-slate-300">Inicia sesión con tu cuenta de Google.</p>
+        <button id="login-btn"
+          class="px-4 py-2 bg-sky-600 rounded-full hover:bg-sky-500 text-sm">
+          Iniciar sesión con Google
+        </button>
+      </div>
+    </section>
+
+    <!-- FORMADOR -->
+    <section id="formador-view" class="hidden space-y-6">
+
+      <!-- NUEVA SOLICITUD -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Nueva solicitud</h2>
+
+        <label class="block text-xs mb-1">Formador</label>
+        <select id="formador-select"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs mb-3"></select>
+
+        <!-- LISTA DINÁMICA DE EQUIPOS -->
+        <div class="flex items-center justify-between mb-1">
+          <span class="text-xs font-semibold">Equipos (máx. 8)</span>
+        </div>
+        <div id="lista-equipos-solicitud" class="space-y-2"></div>
+
+        <button id="btn-add-equipo"
+          class="mt-2 w-full py-1 bg-violet-600 hover:bg-violet-500 rounded-full text-[11px]">
+          ➕ Agregar equipo
+        </button>
+
+        <label class="block text-xs mt-3 mb-1">Fecha de uso</label>
+        <input id="fecha-uso" type="date"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+
+        <label class="block text-xs mb-1 mt-2">Motivo</label>
+        <input id="motivo" type="text"
+          class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-xs">
+
+        <!-- CONECTORES -->
+        <h3 class="text-xs font-semibold mt-3 mb-1">Conectores solicitados</h3>
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label class="block text-[10px] text-slate-400">Fibra</label>
+            <input id="sol-fibra" type="number" min="0" value="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-400">RG6</label>
+            <input id="sol-rg6" type="number" min="0" value="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]">
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-400">RJ45</label>
+            <input id="sol-rj45" type="number" min="0" value="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]">
+          </div>
+        </div>
+
+        <button id="btn-enviar-solicitud"
+          class="w-full mt-3 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-full text-xs">
+          Enviar solicitud
+        </button>
+        <div id="formador-status" class="text-[11px] mt-2"></div>
+      </div>
+
+      <!-- MIS SOLICITUDES -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Mis solicitudes</h2>
+        <div id="mis-solicitudes" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- HISTORIAL PERSONAL -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Historial personal</h2>
+        <div id="historial-formador" class="space-y-1 text-xs"></div>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="admin-view" class="hidden space-y-5">
+
+      <!-- INVENTARIO CONECTORES -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Inventario de conectores</h2>
+        <div id="inventario-conectores" class="text-xs space-y-1 mb-2">
+          <div class="text-slate-400 text-[11px]">Cargando inventario...</div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 text-[11px] mb-2">
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">Fibra</label>
+            <input id="inv-fibra" type="number" min="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1" />
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">RG6</label>
+            <input id="inv-rg6" type="number" min="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1" />
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-400 mb-1">RJ45</label>
+            <input id="inv-rj45" type="number" min="0"
+              class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1" />
+          </div>
+        </div>
+
+        <button id="btn-actualizar-inv"
+          class="w-full py-1 bg-violet-600 hover:bg-violet-500 rounded-full text-[11px]">
+          Actualizar inventario
+        </button>
+
+        <p class="text-[10px] text-slate-500 mt-1">
+          Valores guardados en Firestore (colección <code>inventario</code>, doc <code>global</code>).
+        </p>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-3">Dashboard</h2>
+
+        <!-- FILTRO DASHBOARD -->
+        <div class="mb-4 border border-slate-700 rounded-xl p-3 bg-slate-950/60 text-[11px]">
+          <div class="flex mb-3 border-b border-slate-700">
+            <button id="tab-filtro-mes"
+              class="px-3 py-1 text-xs rounded-t-md border-b-2 border-violet-400 text-violet-300">
+              Por mes
+            </button>
+            <button id="tab-filtro-rango"
+              class="ml-2 px-3 py-1 text-xs rounded-t-md border-b-2 border-transparent text-slate-400">
+              Por rango
+            </button>
+          </div>
+
+          <!-- Panel filtro por MES -->
+          <div id="panel-filtro-mes" class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="flex-1">
+                <label class="block text-[10px] text-slate-400 mb-1">Mes</label>
+                <select id="filter-mes"
+                  class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]">
+                  <option value="1">Enero</option>
+                  <option value="2">Febrero</option>
+                  <option value="3">Marzo</option>
+                  <option value="4">Abril</option>
+                  <option value="5">Mayo</option>
+                  <option value="6">Junio</option>
+                  <option value="7">Julio</option>
+                  <option value="8">Agosto</option>
+                  <option value="9">Septiembre</option>
+                  <option value="10">Octubre</option>
+                  <option value="11">Noviembre</option>
+                  <option value="12">Diciembre</option>
+                </select>
+              </div>
+              <div class="w-24">
+                <label class="block text-[10px] text-slate-400 mb-1">Año</label>
+                <input id="filter-anio" type="number"
+                  class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Panel filtro por RANGO -->
+          <div id="panel-filtro-rango" class="space-y-2 hidden">
+            <div class="flex gap-2 items-center">
+              <div class="flex-1">
+                <label class="block text-[10px] text-slate-400 mb-1">Desde</label>
+                <input id="filter-desde" type="date"
+                  class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+              </div>
+              <div class="flex-1">
+                <label class="block text-[10px] text-slate-400 mb-1">Hasta</label>
+                <input id="filter-hasta" type="date"
+                  class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex gap-2 mt-3">
+            <button id="btn-aplicar-filtro"
+              class="flex-1 py-1 rounded-full bg-violet-600 hover:bg-violet-500 text-[11px]">
+              Aplicar filtro
+            </button>
+            <button id="btn-limpiar-filtro"
+              class="px-3 py-1 rounded-full border border-slate-600 text-[11px] text-slate-300">
+              Quitar filtro
+            </button>
+          </div>
+          <p class="mt-2 text-[10px] text-slate-500">
+            El filtro aplica al historial y a las gráficas. Las tarjetas de inventario muestran el estado actual.
+          </p>
+        </div>
+
+        <!-- Tarjetas resumen -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-[11px]">
+          <div class="border border-violet-500/40 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Pendientes</div>
+            <div id="card-pendientes" class="text-lg font-bold text-violet-300">0</div>
+          </div>
+          <div class="border border-emerald-500/40 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Entregados</div>
+            <div id="card-entregados" class="text-lg font-bold text-emerald-300">0</div>
+          </div>
+          <div class="border border-sky-500/40 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Devueltos</div>
+            <div id="card-devueltos" class="text-lg font-bold text-sky-300">0</div>
+          </div>
+          <div class="border border-rose-500/40 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Equipos prestados</div>
+            <div id="card-prestados" class="text-lg font-bold text-rose-300">0</div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 mb-4 text-[11px]">
+          <div class="border border-slate-700 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Equipos disponibles</div>
+            <div id="card-disponibles" class="text-lg font-bold text-slate-100">0</div>
+          </div>
+          <div class="border border-slate-700 rounded-xl p-3 bg-slate-950/40">
+            <div class="text-slate-400">Total solicitudes</div>
+            <div id="card-total-solicitudes" class="text-lg font-bold text-slate-100">0</div>
+          </div>
+        </div>
+
+        <div class="border border-slate-700 rounded-xl p-3 mb-4 bg-slate-950/40 text-[11px]">
+          <div class="text-slate-400">Consumo de conectores (según filtro)</div>
+          <div id="card-consumo-mes" class="mt-1 text-sm font-semibold text-violet-300">
+            Fibra: 0 • RG6: 0 • RJ45: 0
+          </div>
+        </div>
+
+        <!-- Gráficas -->
+        <div class="space-y-4">
+          <div>
+            <div class="text-[11px] text-slate-400 mb-1">Consumo de conectores por mes</div>
+            <canvas id="chart-consumo" height="160"></canvas>
+          </div>
+          <div>
+            <div class="text-[11px] text-slate-400 mb-1">Top formadores por consumo</div>
+            <canvas id="chart-formadores" height="160"></canvas>
+          </div>
+          <div>
+            <div class="text-[11px] text-slate-400 mb-1">Equipos más prestados</div>
+            <canvas id="chart-equipos" height="160"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- SOLICITUDES PENDIENTES -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Solicitudes pendientes</h2>
+        <div id="lista-pendientes" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- EQUIPOS PRESTADOS -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Equipos prestados</h2>
+        <div id="lista-prestados" class="space-y-2 text-xs"></div>
+      </div>
+
+      <!-- INVENTARIO EQUIPOS -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <h2 class="text-sm font-semibold mb-2">Equipos registrados</h2>
+        <div id="lista-equipos" class="space-y-1 text-xs"></div>
+      </div>
+
+      <!-- HISTORIAL ADMIN -->
+      <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-sm font-semibold">Historial de préstamos</h2>
+          <button id="btn-exportar-historial"
+            class="px-3 py-1 rounded-full bg-slate-800 border border-slate-600 text-[11px]">
+            ⬇ Exportar CSV
+          </button>
+        </div>
+        <div id="historial-admin" class="space-y-1 text-xs"></div>
+      </div>
+
+    </section>
+  </div>
+
+  <!-- FIREBASE + LÓGICA -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import {
+      getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+    import {
+      getFirestore,
+      collection, getDocs, addDoc, onSnapshot,
+      updateDoc, doc, setDoc, getDoc, query, where
+    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBCLna-fGM4c7cpUcHnZzUY01Jfkk22u3A",
+      authDomain: "equipos-de-formacion.firebaseapp.com",
+      projectId: "equipos-de-formacion",
+      storageBucket: "equipos-de-formacion.firebasestorage.app",
+      messagingSenderId: "249416438280",
+      appId: "1:249416438280:web:be76d25b13c7763abcb7bd",
+      measurementId: "G-TTJ1WJNZ2N"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth();
+    const db = getFirestore();
+
+    const ADMIN_EMAIL = "formaciondicosa@gmail.com";
+    const INVENTARIO_DOC_ID = "global";
+
+    const FORMADORES = [
+      "Duber Herney Muñoz Ramos",
+      "Jose Daniel Rubiano Rodriguez",
+      "Miguel Oswaldo Gonzalez Castaño",
+      "Sebastian David Merchán Junca",
+      "Nestor Jair Basante Apraez",
+      "Andres Felipe Tarazona",
+      "Juan Felipe Villamil Torres"
+    ];
+
+    const EQUIPOS_SEMILLA = [
+      { tipo: "Medidor de campo", nombre: "Trilithic 360 Dsp", serie: "360624417" },
+      { tipo: "Decodificador", nombre: "Smart speaker", serie: "1" },
+      { tipo: "Decodificador", nombre: "Claro box", serie: "D4CFF998DF9" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160052873" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160053523" },
+      { tipo: "Mesh router", nombre: "Mesh newland", serie: "810325160052734" }
+    ];
+
+    // DOM refs
+    const loginView = document.getElementById("login-view");
+    const formadorView = document.getElementById("formador-view");
+    const adminView = document.getElementById("admin-view");
+    const loginBtn = document.getElementById("login-btn");
+    const logoutBtn = document.getElementById("logout-btn");
+    const userInfo = document.getElementById("user-info");
+    const userEmailEl = document.getElementById("user-email");
+
+    const formadorSelect = document.getElementById("formador-select");
+    const listaEquiposSolicitud = document.getElementById("lista-equipos-solicitud");
+    const btnAddEquipo = document.getElementById("btn-add-equipo");
+    const fechaUso = document.getElementById("fecha-uso");
+    const motivo = document.getElementById("motivo");
+    const solFibraInput = document.getElementById("sol-fibra");
+    const solRg6Input = document.getElementById("sol-rg6");
+    const solRj45Input = document.getElementById("sol-rj45");
+    const btnEnviar = document.getElementById("btn-enviar-solicitud");
+    const formadorStatus = document.getElementById("formador-status");
+    const misSolicitudes = document.getElementById("mis-solicitudes");
+    const historialFormador = document.getElementById("historial-formador");
+
+    const listaPendientes = document.getElementById("lista-pendientes");
+    const listaPrestados = document.getElementById("lista-prestados");
+    const listaEquipos = document.getElementById("lista-equipos");
+    const inventarioConectores = document.getElementById("inventario-conectores");
+    const invFibraInput = document.getElementById("inv-fibra");
+    const invRg6Input = document.getElementById("inv-rg6");
+    const invRj45Input = document.getElementById("inv-rj45");
+    const btnActualizarInv = document.getElementById("btn-actualizar-inv");
+
+    const tabFiltroMes = document.getElementById("tab-filtro-mes");
+    const tabFiltroRango = document.getElementById("tab-filtro-rango");
+    const panelFiltroMes = document.getElementById("panel-filtro-mes");
+    const panelFiltroRango = document.getElementById("panel-filtro-rango");
+    const filterMesInput = document.getElementById("filter-mes");
+    const filterAnioInput = document.getElementById("filter-anio");
+    const filterDesdeInput = document.getElementById("filter-desde");
+    const filterHastaInput = document.getElementById("filter-hasta");
+    const btnAplicarFiltro = document.getElementById("btn-aplicar-filtro");
+    const btnLimpiarFiltro = document.getElementById("btn-limpiar-filtro");
+
+    const cardPendientesEl = document.getElementById("card-pendientes");
+    const cardEntregadosEl = document.getElementById("card-entregados");
+    const cardDevueltosEl = document.getElementById("card-devueltos");
+    const cardPrestadosEl = document.getElementById("card-prestados");
+    const cardDisponiblesEl = document.getElementById("card-disponibles");
+    const cardTotalSolicitudesEl = document.getElementById("card-total-solicitudes");
+    const cardConsumoMesEl = document.getElementById("card-consumo-mes");
+
+    const historialAdminCont = document.getElementById("historial-admin");
+    const btnExportarHistorial = document.getElementById("btn-exportar-historial");
+
+    let EQUIPOS_CACHE = [];
+    let solicitudesCache = [];
+    let historialCache = [];
+    let historialFiltradoCache = [];
+
+    let chartConsumo = null;
+    let chartFormadores = null;
+    let chartEquipos = null;
+
+    const filtroDashboard = {
+      activo: false,
+      modo: "mes",
+      mes: null,
+      anio: null,
+      desde: "",
+      hasta: ""
+    };
+
+    // LOGIN
+    loginBtn.onclick = () => signInWithPopup(auth, new GoogleAuthProvider());
+    logoutBtn.onclick = () => signOut(auth);
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        loginView.classList.remove("hidden");
+        formadorView.classList.add("hidden");
+        adminView.classList.add("hidden");
+        userInfo.classList.add("hidden");
+        return;
+      }
+
+      loginView.classList.add("hidden");
+      userInfo.classList.remove("hidden");
+      userEmailEl.textContent = user.email;
+
+      const equiposSnap = await getDocs(collection(db, "equipos"));
+      if (equiposSnap.empty) {
+        for (const eq of EQUIPOS_SEMILLA) {
+          await addDoc(collection(db, "equipos"), { ...eq, estado: "disponible" });
+        }
+      }
+
+      await inicializarInventario();
+
+      if (user.email === ADMIN_EMAIL) {
+        adminView.classList.remove("hidden");
+        formadorView.classList.add("hidden");
+        iniciarAdmin();
+      } else {
+        formadorView.classList.remove("hidden");
+        adminView.classList.add("hidden");
+        iniciarFormador();
+      }
+    });
+
+    // INVENTARIO
+    async function inicializarInventario() {
+      const invRef = doc(db, "inventario", INVENTARIO_DOC_ID);
+      const snap = await getDoc(invRef);
+      if (!snap.exists()) {
+        await setDoc(invRef, { fibra: 0, rg6: 0, rj45: 0 });
+      }
+    }
+
+    function escucharInventario() {
+      const invRef = doc(db, "inventario", INVENTARIO_DOC_ID);
+      onSnapshot(invRef, (snap) => {
+        if (!snap.exists()) return;
+        const inv = snap.data();
+        inventarioConectores.innerHTML = `
+          <div>Fibra: <span class="font-semibold">${inv.fibra ?? 0}</span></div>
+          <div>RG6: <span class="font-semibold">${inv.rg6 ?? 0}</span></div>
+          <div>RJ45: <span class="font-semibold">${inv.rj45 ?? 0}</span></div>
+        `;
+        invFibraInput.value = inv.fibra ?? 0;
+        invRg6Input.value = inv.rg6 ?? 0;
+        invRj45Input.value = inv.rj45 ?? 0;
+      });
+    }
+
+    async function actualizarInventarioConsumo(fibra, rg6, rj45) {
+      const invRef = doc(db, "inventario", INVENTARIO_DOC_ID);
+      const snap = await getDoc(invRef);
+      if (!snap.exists()) return;
+      const inv = snap.data();
+      await updateDoc(invRef, {
+        fibra: (inv.fibra ?? 0) - fibra,
+        rg6: (inv.rg6 ?? 0) - rg6,
+        rj45: (inv.rj45 ?? 0) - rj45
+      });
+    }
+
+    btnActualizarInv.onclick = async () => {
+      const fibra = parseInt(invFibraInput.value || "0", 10) || 0;
+      const rg6 = parseInt(invRg6Input.value || "0", 10) || 0;
+      const rj45 = parseInt(invRj45Input.value || "0", 10) || 0;
+      await setDoc(doc(db, "inventario", INVENTARIO_DOC_ID), { fibra, rg6, rj45 });
+      alert("Inventario actualizado.");
+    };
+
+    // FORMADOR
+    async function iniciarFormador() {
+      formadorSelect.innerHTML = "";
+      FORMADORES.forEach(n => {
+        const opt = document.createElement("option");
+        opt.value = n;
+        opt.textContent = n;
+        formadorSelect.appendChild(opt);
+      });
+
+      await cargarEquiposDisponibles();
+      construirPrimeraFilaEquipos();
+
+      btnAddEquipo.onclick = () => {
+        if (listaEquiposSolicitud.children.length >= 8) {
+          alert("Máximo 8 equipos por solicitud.");
+          return;
+        }
+        agregarFilaEquipo();
+      };
+
+      escucharMisSolicitudes();
+      cargarHistorialFormador();
+    }
+
+    async function cargarEquiposDisponibles() {
+      const snapshot = await getDocs(collection(db, "equipos"));
+      EQUIPOS_CACHE = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    function obtenerTiposDisponibles() {
+      const tipos = new Set();
+      EQUIPOS_CACHE.forEach(e => {
+        if (e.estado !== "prestado") tipos.add(e.tipo);
+      });
+      return Array.from(tipos);
+    }
+
+    function equiposYaSeleccionados() {
+      const ids = [];
+      listaEquiposSolicitud.querySelectorAll(".equipo-row").forEach(row => {
+        const sel = row.querySelector(".equipo-select");
+        if (sel && sel.value) ids.push(sel.value);
+      });
+      return ids;
+    }
+
+    function construirPrimeraFilaEquipos() {
+      listaEquiposSolicitud.innerHTML = "";
+      agregarFilaEquipo();
+    }
+
+    function agregarFilaEquipo() {
+      const row = document.createElement("div");
+      row.className = "equipo-row flex items-center gap-2";
+
+      const tipoSelect = document.createElement("select");
+      tipoSelect.className = "tipo-select flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]";
+
+      const equipoSelect = document.createElement("select");
+      equipoSelect.className = "equipo-select flex-1 bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]";
+
+      const btnQuitar = document.createElement("button");
+      btnQuitar.type = "button";
+      btnQuitar.textContent = "Quitar";
+      btnQuitar.className = "text-[11px] text-rose-300 underline";
+      btnQuitar.onclick = () => {
+        row.remove();
+        actualizarEstadoBotonesQuitar();
+      };
+
+      row.appendChild(tipoSelect);
+      row.appendChild(equipoSelect);
+      row.appendChild(btnQuitar);
+      listaEquiposSolicitud.appendChild(row);
+
+      const tipos = obtenerTiposDisponibles();
+      tipoSelect.innerHTML = "";
+      tipos.forEach(t => {
+        const opt = document.createElement("option");
+        opt.value = t;
+        opt.textContent = t;
+        tipoSelect.appendChild(opt);
+      });
+
+      tipoSelect.onchange = () => poblarEquiposEnFila(row);
+      poblarEquiposEnFila(row);
+      actualizarEstadoBotonesQuitar();
+    }
+
+    function actualizarEstadoBotonesQuitar() {
+      const rows = listaEquiposSolicitud.querySelectorAll(".equipo-row");
+      rows.forEach(row => {
+        const btn = row.querySelector("button");
+        if (!btn) return;
+        btn.disabled = (rows.length === 1);
+        btn.classList.toggle("opacity-50", rows.length === 1);
+      });
+    }
+
+    function poblarEquiposEnFila(row) {
+      const tipoSelect = row.querySelector(".tipo-select");
+      const equipoSelect = row.querySelector(".equipo-select");
+      if (!tipoSelect || !equipoSelect) return;
+
+      const tipo = tipoSelect.value;
+      const seleccionados = equiposYaSeleccionados();
+
+      equipoSelect.innerHTML = "";
+      EQUIPOS_CACHE
+        .filter(e => e.tipo === tipo && e.estado !== "prestado" && !seleccionados.includes(e.id))
+        .forEach(e => {
+          const opt = document.createElement("option");
+          opt.value = e.id;
+          opt.textContent = `${e.nombre} (${e.serie})`;
+          equipoSelect.appendChild(opt);
+        });
+    }
+
+    btnEnviar.onclick = async () => {
+      const user = auth.currentUser;
+      if (!user) return;
+
+      const equipoIds = [];
+      listaEquiposSolicitud.querySelectorAll(".equipo-row").forEach(row => {
+        const sel = row.querySelector(".equipo-select");
+        if (sel && sel.value) equipoIds.push(sel.value);
+      });
+
+      if (equipoIds.length === 0) {
+        formadorStatus.textContent = "Selecciona al menos un equipo.";
+        formadorStatus.className = "text-[11px] text-rose-400";
+        return;
+      }
+
+      const fibraSolicitada = parseInt(solFibraInput.value || "0", 10) || 0;
+      const rg6Solicitada = parseInt(solRg6Input.value || "0", 10) || 0;
+      const rj45Solicitada = parseInt(solRj45Input.value || "0", 10) || 0;
+
+      const data = {
+        equipoIds,
+        formadorNombre: formadorSelect.value,
+        formadorEmail: user.email,
+        fechaUso: fechaUso.value,
+        motivo: motivo.value.trim(),
+        estado: "pendiente",
+        fechaSolicitud: new Date(),
+        fechaEntrega: null,
+        fechaDevolucion: null,
+        fibraSolicitada,
+        rg6Solicitada,
+        rj45Solicitada,
+        fibraUsada: null,
+        rg6Usada: null,
+        rj45Usada: null,
+        consumoRegistrado: false
+      };
+
+      await addDoc(collection(db, "solicitudes"), data);
+      formadorStatus.textContent = "Solicitud enviada";
+      formadorStatus.className = "text-[11px] text-emerald-400";
+
+      motivo.value = "";
+      solFibraInput.value = "0";
+      solRg6Input.value = "0";
+      solRj45Input.value = "0";
+    };
+
+    function escucharMisSolicitudes() {
+      const user = auth.currentUser;
+      onSnapshot(collection(db, "solicitudes"), async (snap) => {
+        misSolicitudes.innerHTML = "";
+        for (const docSnap of snap.docs) {
+          const s = { id: docSnap.id, ...docSnap.data() };
+          if (s.formadorEmail !== user.email) continue;
+
+          const div = document.createElement("div");
+          div.className = "border border-slate-700 rounded px-3 py-2";
+
+          let equiposTexto = "Sin equipos";
+          const equipoIds = Array.isArray(s.equipoIds) ? s.equipoIds : [];
+          if (equipoIds.length > 0) {
+            const partes = [];
+            for (const eqId of equipoIds) {
+              const eqSnap = await getDoc(doc(db, "equipos", eqId));
+              if (eqSnap.exists()) {
+                const eq = eqSnap.data();
+                partes.push(`${eq.nombre} (${eq.serie})`);
+              }
+            }
+            if (partes.length > 0) equiposTexto = partes.join(", ");
+          }
+
+          let html = `
+            <div class="font-medium">${equiposTexto}</div>
+            <div class="text-[11px] text-slate-400">
+              Fecha uso: ${s.fechaUso || "-"} • Estado: ${s.estado}
+            </div>
+            <div class="text-[11px] text-slate-400 mt-1">
+              Motivo: ${s.motivo || ""}
+            </div>
+            <div class="text-[10px] text-slate-400 mt-1">
+              Conectores pedidos – Fibra: ${s.fibraSolicitada || 0},
+              RG6: ${s.rg6Solicitada || 0},
+              RJ45: ${s.rj45Solicitada || 0}
+            </div>
+          `;
+
+          if (s.consumoRegistrado) {
+            html += `
+              <div class="text-[10px] text-emerald-400 mt-1">
+                Consumo registrado – Fibra: ${s.fibraUsada || 0},
+                RG6: ${s.rg6Usada || 0},
+                RJ45: ${s.rj45Usada || 0}
+              </div>
+            `;
+          }
+
+          if (s.estado === "entregado" && !s.consumoRegistrado) {
+            html += `
+              <div class="mt-2 border-t border-slate-700 pt-2">
+                <div class="text-[11px] font-semibold mb-1">
+                  Registrar consumo de conectores
+                </div>
+                <div class="grid grid-cols-3 gap-1 mb-2">
+                  <input type="number" min="0" max="${s.fibraSolicitada || 0}"
+                    id="cons-fibra-${s.id}"
+                    placeholder="Fibra"
+                    class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+                  <input type="number" min="0" max="${s.rg6Solicitada || 0}"
+                    id="cons-rg6-${s.id}"
+                    placeholder="RG6"
+                    class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+                  <input type="number" min="0" max="${s.rj45Solicitada || 0}"
+                    id="cons-rj45-${s.id}"
+                    placeholder="RJ45"
+                    class="w-full bg-slate-950 border border-slate-700 rounded px-2 py-1 text-[11px]" />
+                </div>
+                <button
+                  class="w-full py-1 bg-amber-600 hover:bg-amber-500 rounded-full text-[11px]"
+                  onclick="guardarConsumo('${s.id}', ${s.fibraSolicitada || 0}, ${s.rg6Solicitada || 0}, ${s.rj45Solicitada || 0})">
+                  Guardar consumo
+                </button>
+              </div>
+            `;
+          }
+
+          div.innerHTML = html;
+          misSolicitudes.appendChild(div);
+        }
+      });
+    }
+
+    function cargarHistorialFormador() {
+      const user = auth.currentUser;
+      onSnapshot(collection(db, "historial"), async (snap) => {
+        historialFormador.innerHTML = "";
+        for (const d of snap.docs) {
+          const h = d.data();
+          if (h.formadorEmail !== user.email) continue;
+
+          const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
+          let equiposTexto = "Sin equipos";
+          if (equipoIds.length > 0) {
+            const nombres = [];
+            for (const eqId of equipoIds) {
+              const eqSnap = await getDoc(doc(db, "equipos", eqId));
+              if (eqSnap.exists()) {
+                const eq = eqSnap.data();
+                nombres.push(`${eq.nombre} (${eq.serie})`);
+              }
+            }
+            if (nombres.length === 1) {
+              equiposTexto = nombres[0];
+            } else if (nombres.length > 1) {
+              equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
+            }
+          }
+
+          const div = document.createElement("div");
+          div.className = "border border-slate-700 rounded px-3 py-1";
+          div.innerHTML = `
+            <div class="font-medium">${equiposTexto}</div>
+            <div class="text-[10px] text-slate-400">
+              Entrega: ${h.fechaEntrega ? h.fechaEntrega.toDate().toLocaleString() : "-"}
+              ${h.fechaDevolucion ? " | Devolución: " + h.fechaDevolucion.toDate().toLocaleString() : ""}
+            </div>
+            <div class="text-[10px] text-slate-400">
+              Conectores pedidos – Fibra: ${h.fibraSolicitada || 0},
+              RG6: ${h.rg6Solicitada || 0},
+              RJ45: ${h.rj45Solicitada || 0}
+            </div>
+            <div class="text-[10px] text-emerald-400">
+              Consumo – Fibra: ${h.fibraUsada ?? 0},
+              RG6: ${h.rg6Usada ?? 0},
+              RJ45: ${h.rj45Usada ?? 0}
+            </div>
+          `;
+          historialFormador.appendChild(div);
+        }
+      });
+    }
+
+    // ADMIN
+    function iniciarAdmin() {
+      escucharInventario();
+      setupDashboardFilterUI();
+      escucharSolicitudes();
+      escucharEquipos();
+      cargarHistorialAdmin();
+      btnExportarHistorial.onclick = exportarHistorialCSV;
+    }
+
+    function escucharSolicitudes() {
+      onSnapshot(collection(db, "solicitudes"), async (snap) => {
+        solicitudesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        listaPendientes.innerHTML = "";
+        listaPrestados.innerHTML = "";
+
+        for (const docSnap of snap.docs) {
+          const s = { id: docSnap.id, ...docSnap.data() };
+
+          const equipoIds = Array.isArray(s.equipoIds)
+            ? s.equipoIds
+            : (s.equipoId ? [s.equipoId] : []);
+
+          let equiposTexto = "Sin equipos";
+          if (equipoIds.length > 0) {
+            const nombres = [];
+            for (const eqId of equipoIds) {
+              const eqSnap = await getDoc(doc(db, "equipos", eqId));
+              if (eqSnap.exists()) {
+                const eq = eqSnap.data();
+                nombres.push(`${eq.tipo} — ${eq.nombre} (${eq.serie})`);
+              }
+            }
+            if (nombres.length === 1) {
+              equiposTexto = nombres[0];
+            } else if (nombres.length > 1) {
+              equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
+            }
+          }
+
+          if (s.estado === "pendiente") {
+            const div = document.createElement("div");
+            div.className = "border border-slate-700 rounded px-3 py-2";
+            div.innerHTML = `
+              <div class="font-medium">${equiposTexto}</div>
+              <div class="text-[11px] text-slate-400">
+                ${s.formadorNombre} (${s.formadorEmail})
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">
+                Motivo: ${s.motivo || ""}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">
+                Conectores pedidos – Fibra: ${s.fibraSolicitada || 0},
+                RG6: ${s.rg6Solicitada || 0},
+                RJ45: ${s.rj45Solicitada || 0}
+              </div>
+              <button class="w-full mt-2 py-1 bg-sky-600 rounded-full text-xs"
+                onclick="aprobar('${s.id}')">Entregar</button>
+            `;
+            listaPendientes.appendChild(div);
+          }
+
+          if (s.estado === "entregado") {
+            const div = document.createElement("div");
+            div.className = "border border-slate-700 rounded px-3 py-2";
+
+            let consumoTexto = "";
+            if (s.consumoRegistrado) {
+              consumoTexto = `
+                <div class="text-[10px] text-emerald-400 mt-1">
+                  Consumo – Fibra: ${s.fibraUsada || 0},
+                  RG6: ${s.rg6Usada || 0},
+                  RJ45: ${s.rj45Usada || 0}
+                </div>
+              `;
+            } else {
+              consumoTexto = `
+                <div class="text-[10px] text-amber-400 mt-1">
+                  El formador aún no registra consumo de conectores.
+                </div>
+              `;
+            }
+
+            div.innerHTML = `
+              <div class="font-medium">${equiposTexto}</div>
+              <div class="text-[11px] text-slate-400">
+                ${s.formadorNombre} (${s.formadorEmail})
+              </div>
+              <div class="text-[11px] text-slate-400 mt-1">
+                Motivo: ${s.motivo || ""}
+              </div>
+              <div class="text-[10px] text-slate-400 mt-1">
+                Conectores pedidos – Fibra: ${s.fibraSolicitada || 0},
+                RG6: ${s.rg6Solicitada || 0},
+                RJ45: ${s.rj45Solicitada || 0}
+              </div>
+              ${consumoTexto}
+              <button class="w-full mt-2 py-1 bg-emerald-600 rounded-full text-xs"
+                onclick="devolver('${s.id}')">
+                Marcar devuelto
+              </button>
+            `;
+            listaPrestados.appendChild(div);
+          }
+        }
+
+        actualizarTarjetas();
+      });
+    }
+
+    function escucharEquipos() {
+      onSnapshot(collection(db, "equipos"), (snap) => {
+        listaEquipos.innerHTML = "";
+        let prestados = 0;
+        let disponibles = 0;
+
+        snap.docs.forEach(d => {
+          const e = d.data();
+          const div = document.createElement("div");
+          div.className = "border border-slate-700 rounded px-3 py-1";
+          div.innerHTML = `
+            ${e.tipo} — ${e.nombre} (${e.serie})
+            <span class="text-[10px] text-slate-400 float-right">${e.estado}</span>
+          `;
+          listaEquipos.appendChild(div);
+          if (e.estado === "prestado") prestados++;
+          if (e.estado === "disponible") disponibles++;
+        });
+
+        cardPrestadosEl.textContent = prestados;
+        cardDisponiblesEl.textContent = disponibles;
+      });
+    }
+
+    function cargarHistorialAdmin() {
+      onSnapshot(collection(db, "historial"), (snap) => {
+        historialCache = snap.docs;
+        aplicarFiltroDashboard();
+      });
+    }
+
+    function actualizarTarjetas() {
+      const pendientes = solicitudesCache.filter(s => s.estado === "pendiente").length;
+      const entregados = solicitudesCache.filter(s => s.estado === "entregado").length;
+      const devueltos = solicitudesCache.filter(s => s.estado === "devuelto").length;
+
+      cardPendientesEl.textContent = pendientes;
+      cardEntregadosEl.textContent = entregados;
+      cardDevueltosEl.textContent = devueltos;
+      cardTotalSolicitudesEl.textContent = solicitudesCache.length;
+    }
+
+    // DASHBOARD
+    function setupDashboardFilterUI() {
+      const hoy = new Date();
+      filterMesInput.value = String(hoy.getMonth() + 1);
+      filterAnioInput.value = hoy.getFullYear();
+
+      filtroDashboard.modo = "mes";
+
+      tabFiltroMes.onclick = () => {
+        filtroDashboard.modo = "mes";
+        tabFiltroMes.classList.add("border-violet-400", "text-violet-300");
+        tabFiltroRango.classList.remove("border-violet-400", "text-violet-300");
+        tabFiltroRango.classList.add("text-slate-400");
+        panelFiltroMes.classList.remove("hidden");
+        panelFiltroRango.classList.add("hidden");
+      };
+
+      tabFiltroRango.onclick = () => {
+        filtroDashboard.modo = "rango";
+        tabFiltroRango.classList.add("border-violet-400", "text-violet-300");
+        tabFiltroMes.classList.remove("border-violet-400", "text-violet-300");
+        tabFiltroMes.classList.add("text-slate-400");
+        panelFiltroRango.classList.remove("hidden");
+        panelFiltroMes.classList.add("hidden");
+      };
+
+      btnAplicarFiltro.onclick = () => {
+        if (filtroDashboard.modo === "mes") {
+          const m = parseInt(filterMesInput.value, 10);
+          const y = parseInt(filterAnioInput.value, 10);
+          if (isNaN(m) || isNaN(y)) {
+            alert("Completa mes y año para aplicar el filtro.");
+            return;
+          }
+          filtroDashboard.mes = m;
+          filtroDashboard.anio = y;
+          filtroDashboard.desde = "";
+          filtroDashboard.hasta = "";
+        } else {
+          const desde = filterDesdeInput.value;
+          const hasta = filterHastaInput.value;
+          if (!desde || !hasta) {
+            alert("Completa las fechas Desde y Hasta.");
+            return;
+          }
+          filtroDashboard.desde = desde;
+          filtroDashboard.hasta = hasta;
+          filtroDashboard.mes = null;
+          filtroDashboard.anio = null;
+        }
+        filtroDashboard.activo = true;
+        aplicarFiltroDashboard();
+      };
+
+      btnLimpiarFiltro.onclick = () => {
+        filtroDashboard.activo = false;
+        aplicarFiltroDashboard();
+      };
+
+      aplicarFiltroDashboard();
+    }
+
+    function obtenerRangoFechasDesdeFiltro() {
+      if (!filtroDashboard.activo) return { desde: null, hasta: null };
+
+      if (filtroDashboard.modo === "mes") {
+        const y = filtroDashboard.anio;
+        const m = filtroDashboard.mes;
+        if (!y || !m) return { desde: null, hasta: null };
+        const desde = new Date(y, m - 1, 1, 0, 0, 0);
+        const hasta = new Date(y, m, 0, 23, 59, 59);
+        return { desde, hasta };
+      } else {
+        if (!filtroDashboard.desde || !filtroDashboard.hasta)
+          return { desde: null, hasta: null };
+        const desde = new Date(filtroDashboard.desde + "T00:00:00");
+        const hasta = new Date(filtroDashboard.hasta + "T23:59:59");
+        return { desde, hasta };
+      }
+    }
+
+    async function aplicarFiltroDashboard() {
+      historialAdminCont.innerHTML = "";
+      if (!historialCache || historialCache.length === 0) {
+        actualizarChartsFromHistorial([]);
+        cardConsumoMesEl.textContent = "Fibra: 0 • RG6: 0 • RJ45: 0";
+        historialFiltradoCache = [];
+        return;
+      }
+
+      const { desde, hasta } = obtenerRangoFechasDesdeFiltro();
+
+      const filtrados = historialCache.filter(d => {
+        if (!filtroDashboard.activo) return true;
+        const h = d.data();
+        let fecha = h.fechaEntrega;
+        if (!fecha) return false;
+        if (fecha.toDate) fecha = fecha.toDate();
+        const t = fecha.getTime();
+        if (desde && t < desde.getTime()) return false;
+        if (hasta && t > hasta.getTime()) return false;
+        return true;
+      });
+
+      historialFiltradoCache = filtrados;
+      await actualizarChartsFromHistorial(filtrados);
+
+      for (const d of filtrados) {
+        const h = d.data();
+        const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
+        let equiposTexto = "Sin equipos";
+
+        if (equipoIds.length > 0) {
+          const nombres = [];
+          for (const eqId of equipoIds) {
+            const eqSnap = await getDoc(doc(db, "equipos", eqId));
+            if (eqSnap.exists()) {
+              const eq = eqSnap.data();
+              nombres.push(`${eq.nombre} (${eq.serie})`);
+            }
+          }
+          if (nombres.length === 1) {
+            equiposTexto = nombres[0];
+          } else if (nombres.length > 1) {
+            equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
+          }
+        }
+
+        const div = document.createElement("div");
+        div.className = "border border-slate-700 rounded px-3 py-1";
+        div.innerHTML = `
+          <div class="font-medium">${equiposTexto}</div>
+          <div class="text-[10px] text-slate-400">
+            ${h.formadorNombre} (${h.formadorEmail})
+          </div>
+          <div class="text-[10px] text-slate-400">
+            Entrega: ${h.fechaEntrega ? h.fechaEntrega.toDate().toLocaleString() : "-"}
+            ${h.fechaDevolucion ? " | Devolución: " + h.fechaDevolucion.toDate().toLocaleString() : ""}
+          </div>
+          <div class="text-[10px] text-slate-400">
+            Conectores pedidos – Fibra: ${h.fibraSolicitada || 0},
+            RG6: ${h.rg6Solicitada || 0},
+            RJ45: ${h.rj45Solicitada || 0}
+          </div>
+          <div class="text-[10px] text-emerald-400">
+            Consumo – Fibra: ${h.fibraUsada ?? 0},
+            RG6: ${h.rg6Usada ?? 0},
+            RJ45: ${h.rj45Usada ?? 0}
+          </div>
+        `;
+        historialAdminCont.appendChild(div);
+      }
+    }
+
+    async function actualizarChartsFromHistorial(docs) {
+      const consumoPorMes = {};
+      const consumoPorFormador = {};
+      const usoPorEquipo = {};
+
+      let fibraTotal = 0, rg6Total = 0, rj45Total = 0;
+
+      for (const d of docs) {
+        const h = d.data();
+        const fb = h.fibraUsada ?? 0;
+        const rg = h.rg6Usada ?? 0;
+        const rj = h.rj45Usada ?? 0;
+        fibraTotal += fb;
+        rg6Total += rg;
+        rj45Total += rj;
+
+        let fecha = h.fechaEntrega;
+        if (fecha && fecha.toDate) fecha = fecha.toDate();
+        if (fecha) {
+          const key = `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+          if (!consumoPorMes[key]) consumoPorMes[key] = { fibra: 0, rg6: 0, rj45: 0 };
+          consumoPorMes[key].fibra += fb;
+          consumoPorMes[key].rg6 += rg;
+          consumoPorMes[key].rj45 += rj;
+        }
+
+        const totalConectores = fb + rg + rj;
+        if (totalConectores > 0 && h.formadorNombre) {
+          consumoPorFormador[h.formadorNombre] =
+            (consumoPorFormador[h.formadorNombre] || 0) + totalConectores;
+        }
+
+        const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
+        for (const eqId of equipoIds) {
+          const eqSnap = await getDoc(doc(db, "equipos", eqId));
+          if (eqSnap.exists()) {
+            const eq = eqSnap.data();
+            const keyE = `${eq.nombre} (${eq.serie})`;
+            usoPorEquipo[keyE] = (usoPorEquipo[keyE] || 0) + 1;
+          }
+        }
+      }
+
+      cardConsumoMesEl.textContent =
+        `Fibra: ${fibraTotal} • RG6: ${rg6Total} • RJ45: ${rj45Total}`;
+
+      const meses = Object.keys(consumoPorMes).sort();
+      const fibraData = meses.map(m => consumoPorMes[m].fibra);
+      const rg6Data = meses.map(m => consumoPorMes[m].rg6);
+      const rj45Data = meses.map(m => consumoPorMes[m].rj45);
+
+      const ctxConsumo = document.getElementById("chart-consumo")?.getContext("2d");
+      if (ctxConsumo) {
+        if (chartConsumo) chartConsumo.destroy();
+        chartConsumo = new Chart(ctxConsumo, {
+          type: "line",
+          data: {
+            labels: meses,
+            datasets: [
+              { label: "Fibra", data: fibraData, borderWidth: 2, tension: 0.3 },
+              { label: "RG6", data: rg6Data, borderWidth: 2, tension: 0.3 },
+              { label: "RJ45", data: rj45Data, borderWidth: 2, tension: 0.3 }
+            ]
+          },
+          options: {
+            plugins: { legend: { labels: { color: "#e5e7eb", font: { size: 10 } } } },
+            scales: {
+              x: { ticks: { color: "#9ca3af", font: { size: 10 } }, grid: { color: "#1f2937" } },
+              y: { ticks: { color: "#9ca3af", font: { size: 10 } }, grid: { color: "#1f2937" } }
+            }
+          }
+        });
+      }
+
+      const formadoresArr = Object.entries(consumoPorFormador)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const formLabels = formadoresArr.map(f => f[0]);
+      const formVals = formadoresArr.map(f => f[1]);
+
+      const ctxFormadores = document.getElementById("chart-formadores")?.getContext("2d");
+      if (ctxFormadores) {
+        if (chartFormadores) chartFormadores.destroy();
+        chartFormadores = new Chart(ctxFormadores, {
+          type: "bar",
+          data: {
+            labels: formLabels,
+            datasets: [{ label: "Conectores usados", data: formVals, borderWidth: 1 }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: "#9ca3af", font: { size: 9 } }, grid: { display: false } },
+              y: { ticks: { color: "#9ca3af", font: { size: 10 } }, grid: { color: "#1f2937" } }
+            }
+          }
+        });
+      }
+
+      const equipArr = Object.entries(usoPorEquipo)
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 5);
+      const eqLabels = equipArr.map(e => e[0]);
+      const eqVals = equipArr.map(e => e[1]);
+
+      const ctxEquipos = document.getElementById("chart-equipos")?.getContext("2d");
+      if (ctxEquipos) {
+        if (chartEquipos) chartEquipos.destroy();
+        chartEquipos = new Chart(ctxEquipos, {
+          type: "bar",
+          data: {
+            labels: eqLabels,
+            datasets: [{ label: "Veces prestado", data: eqVals, borderWidth: 1 }]
+          },
+          options: {
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { ticks: { color: "#9ca3af", font: { size: 9 } }, grid: { display: false } },
+              y: { ticks: { color: "#9ca3af", font: { size: 10 } }, grid: { color: "#1f2937" } }
+            }
+          }
+        });
+      }
+    }
+
+    window.aprobar = async (solId) => {
+      const solRef = doc(db, "solicitudes", solId);
+      const solSnap = await getDoc(solRef);
+      if (!solSnap.exists()) return;
+      const sol = solSnap.data();
+
+      const equipoIds = Array.isArray(sol.equipoIds)
+        ? sol.equipoIds
+        : (sol.equipoId ? [sol.equipoId] : []);
+
+      const ahora = new Date();
+
+      await updateDoc(solRef, { estado: "entregado", fechaEntrega: ahora });
+
+      for (const eqId of equipoIds) {
+        await updateDoc(doc(db, "equipos", eqId), { estado: "prestado" });
+      }
+
+      await addDoc(collection(db, "historial"), {
+        solicitudId: solId,
+        equipoIds,
+        formadorNombre: sol.formadorNombre,
+        formadorEmail: sol.formadorEmail,
+        motivo: sol.motivo,
+        fechaUso: sol.fechaUso,
+        fechaEntrega: ahora,
+        fechaDevolucion: null,
+        estado: "entregado",
+        fibraSolicitada: sol.fibraSolicitada || 0,
+        rg6Solicitada: sol.rg6Solicitada || 0,
+        rj45Solicitada: sol.rj45Solicitada || 0,
+        fibraUsada: null,
+        rg6Usada: null,
+        rj45Usada: null,
+        consumoRegistrado: false
+      });
+    };
+
+    window.devolver = async (solId) => {
+      const solRef = doc(db, "solicitudes", solId);
+      const solSnap = await getDoc(solRef);
+      if (!solSnap.exists()) return;
+      const sol = solSnap.data();
+
+      if (!sol.consumoRegistrado) {
+        alert("El formador debe registrar primero el consumo de conectores antes de marcar la devolución.");
+        return;
+      }
+
+      const equipoIds = Array.isArray(sol.equipoIds)
+        ? sol.equipoIds
+        : (sol.equipoId ? [sol.equipoId] : []);
+
+      const ahora = new Date();
+
+      await updateDoc(solRef, { estado: "devuelto", fechaDevolucion: ahora });
+
+      for (const eqId of equipoIds) {
+        await updateDoc(doc(db, "equipos", eqId), { estado: "disponible" });
+      }
+
+      const qHist = query(collection(db, "historial"), where("solicitudId", "==", solId));
+      const histSnap = await getDocs(qHist);
+      for (const hDoc of histSnap.docs) {
+        await updateDoc(doc(db, "historial", hDoc.id), {
+          fechaDevolucion: ahora,
+          estado: "devuelto",
+          fibraUsada: sol.fibraUsada ?? 0,
+          rg6Usada: sol.rg6Usada ?? 0,
+          rj45Usada: sol.rj45Usada ?? 0,
+          consumoRegistrado: sol.consumoRegistrado ?? false
+        });
+      }
+    };
+
+    window.guardarConsumo = async (solId, maxFibra, maxRg6, maxRj45) => {
+      const fibraVal = parseInt(
+        (document.getElementById(`cons-fibra-${solId}`)?.value || "0"),
+        10
+      ) || 0;
+      const rg6Val = parseInt(
+        (document.getElementById(`cons-rg6-${solId}`)?.value || "0"),
+        10
+      ) || 0;
+      const rj45Val = parseInt(
+        (document.getElementById(`cons-rj45-${solId}`)?.value || "0"),
+        10
+      ) || 0;
+
+      if (fibraVal < 0 || rg6Val < 0 || rj45Val < 0) {
+        alert("Los valores no pueden ser negativos.");
+        return;
+      }
+      if (fibraVal > maxFibra || rg6Val > maxRg6 || rj45Val > maxRj45) {
+        alert("No puedes reportar más de lo pedido.");
+        return;
+      }
+
+      const solRef = doc(db, "solicitudes", solId);
+      await updateDoc(solRef, {
+        fibraUsada: fibraVal,
+        rg6Usada: rg6Val,
+        rj45Usada: rj45Val,
+        consumoRegistrado: true
+      });
+
+      await actualizarInventarioConsumo(fibraVal, rg6Val, rj45Val);
+
+      const qHist = query(collection(db, "historial"), where("solicitudId", "==", solId));
+      const histSnap = await getDocs(qHist);
+      for (const hDoc of histSnap.docs) {
+        await updateDoc(doc(db, "historial", hDoc.id), {
+          fibraUsada: fibraVal,
+          rg6Usada: rg6Val,
+          rj45Usada: rj45Val,
+          consumoRegistrado: true
+        });
+      }
+
+      alert("Consumo registrado correctamente.");
+    };
+
+    async function exportarHistorialCSV() {
+      const docs = filtroDashboard.activo ? historialFiltradoCache : historialCache;
+      if (!docs || docs.length === 0) {
+        alert("No hay datos en el historial para exportar.");
+        return;
+      }
+
+      const eqSnap = await getDocs(collection(db, "equipos"));
+      const eqMap = {};
+      eqSnap.docs.forEach(d => {
+        const e = d.data();
+        eqMap[d.id] = `${e.nombre} (${e.serie})`;
+      });
+
+      const rows = [];
+      rows.push([
+        "Formador",
+        "Email",
+        "Equipos",
+        "FechaEntrega",
+        "FechaDevolucion",
+        "FibraSolicitada",
+        "RG6Solicitada",
+        "RJ45Solicitada",
+        "FibraUsada",
+        "RG6Usada",
+        "RJ45Usada",
+        "Estado"
+      ]);
+
+      for (const d of docs) {
+        const h = d.data();
+        const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
+        const equiposNom = equipoIds.map(id => eqMap[id] || id).join(" | ");
+        const fEnt = h.fechaEntrega ? h.fechaEntrega.toDate().toLocaleString() : "";
+        const fDev = h.fechaDevolucion ? h.fechaDevolucion.toDate().toLocaleString() : "";
+
+        rows.push([
+          h.formadorNombre || "",
+          h.formadorEmail || "",
+          equiposNom,
+          fEnt,
+          fDev,
+          h.fibraSolicitada ?? 0,
+          h.rg6Solicitada ?? 0,
+          h.rj45Solicitada ?? 0,
+          h.fibraUsada ?? 0,
+          h.rg6Usada ?? 0,
+          h.rj45Usada ?? 0,
+          h.estado || ""
+        ]);
+      }
+
+      const csv = rows.map(r =>
+        r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")
+      ).join("\n");
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "historial_prestamos.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  </script>
+</body>
+</html>
