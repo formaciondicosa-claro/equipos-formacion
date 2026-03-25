@@ -640,19 +640,22 @@
         const sel = row.querySelector(".equipo-select");
         if (sel && sel.value) equipoIds.push(sel.value);
       });
-
-      if (equipoIds.length === 0) {
-        formadorStatus.textContent = "Selecciona al menos un equipo.";
-        formadorStatus.className = "text-[11px] text-rose-400";
-        return;
-      }
-
-      const fibraSolicitada = parseInt(solFibraInput.value || "0", 10) || 0;
+const equipoIdsFiltrados = equipoIds.filter(id => id);
+       const fibraSolicitada = parseInt(solFibraInput.value || "0", 10) || 0;
       const rg6Solicitada = parseInt(solRg6Input.value || "0", 10) || 0;
       const rj45Solicitada = parseInt(solRj45Input.value || "0", 10) || 0;
+     const totalConectores =
+  fibraSolicitada + rg6Solicitada + rj45Solicitada;
 
+if (equipoIdsFiltrados.length === 0 && totalConectores === 0)
+  formadorStatus.textContent = "Debes solicitar al menos un equipo o conectores.";
+  formadorStatus.className = "text-[11px] text-rose-400";
+  return;
+}
+
+     
       const data = {
-        equipoIds,
+        equipoIds: equipoIdsFiltrados,
         formadorNombre: formadorSelect.value,
         formadorEmail: user.email,
         fechaUso: fechaUso.value,
@@ -931,8 +934,17 @@ document.getElementById("btn-limpiar-datos").onclick = async () => {
                 RG6: ${s.rg6Solicitada || 0},
                 RJ45: ${s.rj45Solicitada || 0}
               </div>
-              <button class="w-full mt-2 py-1 bg-sky-600 rounded-full text-xs"
-                onclick="aprobar('${s.id}')">Entregar</button>
+              <div class="flex gap-2 mt-2">
+  <button class="flex-1 py-1 bg-sky-600 rounded-full text-xs"
+    onclick="aprobar('${s.id}')">
+    Entregar
+  </button>
+
+  <button class="flex-1 py-1 bg-rose-600 rounded-full text-xs"
+    onclick="rechazar('${s.id}')">
+    Denegar
+  </button>
+</div>
             `;
             listaPendientes.appendChild(div);
           }
@@ -1324,57 +1336,74 @@ cardPrestadosEl.textContent = solicitudesPrestadas;
     }
 
     // 👉 Aprobación / devolución / consumo
+window.aprobar = async (solId) => {
 
-    window.aprobar = async (solId) => {
-      const solRef = doc(db, "solicitudes", solId);
-      const solSnap = await getDoc(solRef);
-      if (!solSnap.exists()) return;
-      const sol = solSnap.data();
+  const solRef = doc(db, "solicitudes", solId);
+  const solSnap = await getDoc(solRef);
+  if (!solSnap.exists()) return;
 
-      const equipoIds = Array.isArray(sol.equipoIds)
-        ? sol.equipoIds
-        : (sol.equipoId ? [sol.equipoId] : []);
+  const sol = solSnap.data();
 
-for (const eqId of equipoIds) {
-  const eqSnap = await getDoc(doc(db, "equipos", eqId));
+  const equipoIds = Array.isArray(sol.equipoIds)
+    ? sol.equipoIds
+    : (sol.equipoId ? [sol.equipoId] : []);
 
-  if (!eqSnap.exists()) continue;
+  // VALIDAR SI YA ESTÁN PRESTADOS
+  for (const eqId of equipoIds) {
+    const eqSnap = await getDoc(doc(db, "equipos", eqId));
+    if (!eqSnap.exists()) continue;
 
-  const eq = eqSnap.data();
-
-  if (eq.estado === "prestado") {
-    alert(`❌ ERROR: El equipo ${eq.nombre} (${eq.serie}) ya está prestado.`);
-    return; 
+    const eq = eqSnap.data();
+    if (eq.estado === "prestado") {
+      alert(`❌ ERROR: El equipo ${eq.nombre} (${eq.serie}) ya está prestado.`);
+      return;
+    }
   }
-}
-      const ahora = new Date();
 
-      await updateDoc(solRef, { estado: "entregado", fechaEntrega: ahora });
+  const ahora = new Date();
 
-      for (const eqId of equipoIds) {
-        await updateDoc(doc(db, "equipos", eqId), { estado: "prestado" });
-      }
+  await updateDoc(solRef, {
+    estado: "entregado",
+    fechaEntrega: ahora
+  });
 
-      await addDoc(collection(db, "historial"), {
-        solicitudId: solId,
-        equipoIds,
-        formadorNombre: sol.formadorNombre,
-        formadorEmail: sol.formadorEmail,
-        motivo: sol.motivo,
-        fechaUso: sol.fechaUso,
-        fechaEntrega: ahora,
-        fechaDevolucion: null,
-        estado: "entregado",
-        fibraSolicitada: sol.fibraSolicitada || 0,
-        rg6Solicitada: sol.rg6Solicitada || 0,
-        rj45Solicitada: sol.rj45Solicitada || 0,
-        fibraUsada: sol.fibraUsada ?? null,
-        rg6Usada: sol.rg6Usada ?? null,
-        rj45Usada: sol.rj45Usada ?? null,
-        consumoRegistrado: sol.consumoRegistrado ?? false
-      });
-    };
+  for (const eqId of equipoIds) {
+    await updateDoc(doc(db, "equipos", eqId), {
+      estado: "prestado"
+    });
+  }
 
+  await addDoc(collection(db, "historial"), {
+    solicitudId: solId,
+    equipoIds,
+    formadorNombre: sol.formadorNombre,
+    formadorEmail: sol.formadorEmail,
+    motivo: sol.motivo,
+    fechaUso: sol.fechaUso,
+    fechaEntrega: ahora,
+    fechaDevolucion: null,
+    estado: "entregado",
+    fibraSolicitada: sol.fibraSolicitada || 0,
+    rg6Solicitada: sol.rg6Solicitada || 0,
+    rj45Solicitada: sol.rj45Solicitada || 0,
+    fibraUsada: null,
+    rg6Usada: null,
+    rj45Usada: null,
+    consumoRegistrado: false
+  });
+
+};
+    window.rechazar = async (solId) => {
+  const solRef = doc(db, "solicitudes", solId);
+
+  await updateDoc(solRef, {
+    estado: "rechazada"
+  });
+
+  alert("Solicitud rechazada.");
+};
+    
+   
     window.devolver = async (solId) => {
       const solRef = doc(db, "solicitudes", solId);
       const solSnap = await getDoc(solRef);
