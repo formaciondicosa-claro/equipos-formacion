@@ -647,7 +647,7 @@ const equipoIdsFiltrados = equipoIds.filter(id => id);
      const totalConectores =
   fibraSolicitada + rg6Solicitada + rj45Solicitada;
 
-if (equipoIdsFiltrados.length === 0 && totalConectores === 0)
+if (equipoIdsFiltrados.length === 0 && totalConectores === 0) {
   formadorStatus.textContent = "Debes solicitar al menos un equipo o conectores.";
   formadorStatus.className = "text-[11px] text-rose-400";
   return;
