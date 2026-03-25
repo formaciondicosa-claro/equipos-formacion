@@ -145,7 +145,10 @@
       <!-- DASHBOARD -->
       <div class="bg-slate-900 border border-slate-700 rounded-xl p-4">
         <h2 class="text-sm font-semibold mb-3">Dashboard</h2>
-
+<button id="btn-limpiar-datos"
+  class="w-full py-1 bg-rose-600 hover:bg-rose-500 rounded-full text-[11px] mb-3">
+  🧹 Limpiar inconsistencias
+</button>
         <!-- FILTRO DASHBOARD -->
         <div class="mb-4 border border-slate-700 rounded-xl p-3 bg-slate-950/60 text-[11px]">
           <div class="flex mb-3 border-b border-slate-700">
@@ -314,11 +317,11 @@
       getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged
     } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
     import {
-      getFirestore,
-      collection, getDocs, addDoc, onSnapshot,
-      updateDoc, doc, setDoc, getDoc, query, where
-    } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
+  getFirestore,
+  collection, getDocs, addDoc, onSnapshot,
+  updateDoc, doc, setDoc, getDoc, query, where,
+  orderBy, limit
+} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
     const firebaseConfig = {
   apiKey: "AIzaSyBCLna-fGM4c7cpUcHnZzUY01Jfkk22u3A",
   authDomain: "equipos-de-formacion.firebaseapp.com",
@@ -770,7 +773,14 @@
 
     function cargarHistorialFormador() {
       const user = auth.currentUser;
-      onSnapshot(collection(db, "historial"), async (snap) => {
+      
+const q = query(
+  collection(db, "historial"),
+  orderBy("fechaEntrega", "desc"),
+  limit(5)
+);
+
+onSnapshot(q, async (snap) => {
         historialFormador.innerHTML = "";
         for (const d of snap.docs) {
           const h = d.data();
@@ -787,11 +797,9 @@
                 nombres.push(`${eq.nombre} (${eq.serie})`);
               }
             }
-            if (nombres.length === 1) {
-              equiposTexto = nombres[0];
-            } else if (nombres.length > 1) {
-              equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
-            }
+           if (nombres.length > 0) {
+  equiposTexto = nombres.join(", ");
+}
           }
 
           const div = document.createElement("div");
@@ -827,7 +835,46 @@
       cargarHistorialAdmin();
       btnExportarHistorial.onclick = exportarHistorialCSV;
     }
+// 🧹 LIMPIAR EQUIPOS MAL MARCADOS
+document.getElementById("btn-limpiar-datos").onclick = async () => {
 
+  // 1. Traer todos los equipos
+  const equiposSnap = await getDocs(collection(db, "equipos"));
+
+  // 2. Traer todas las solicitudes
+  const solicitudesSnap = await getDocs(collection(db, "solicitudes"));
+
+  // 3. Filtrar solo las solicitudes activas (entregadas)
+  const solicitudesActivas = solicitudesSnap.docs
+    .map(d => d.data())
+    .filter(s => s.estado === "entregado");
+
+  let corregidos = 0;
+
+  // 4. Revisar cada equipo
+  for (const eqDoc of equiposSnap.docs) {
+    const eq = eqDoc.data();
+    const eqId = eqDoc.id;
+
+    // Solo revisar los que están en "prestado"
+    if (eq.estado !== "prestado") continue;
+
+    // 5. Verificar si ese equipo está en alguna solicitud activa
+    const estaEnUso = solicitudesActivas.some(s =>
+      (s.equipoIds || []).includes(eqId)
+    );
+
+    // 6. Si NO está en uso → corregir
+    if (!estaEnUso) {
+      await updateDoc(doc(db, "equipos", eqId), {
+        estado: "disponible"
+      });
+      corregidos++;
+    }
+  }
+
+  alert(`✅ Limpieza completa. Equipos corregidos: ${corregidos}`);
+};
     function escucharSolicitudes() {
       onSnapshot(collection(db, "solicitudes"), async (snap) => {
         solicitudesCache = snap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -851,11 +898,9 @@
                 nombres.push(`${eq.tipo} — ${eq.nombre} (${eq.serie})`);
               }
             }
-            if (nombres.length === 1) {
-              equiposTexto = nombres[0];
-            } else if (nombres.length > 1) {
-              equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
-            }
+           if (nombres.length > 0) {
+  equiposTexto = nombres.join(", ");
+}
           }
 
           const totalSolicitado =
@@ -959,17 +1004,67 @@
           if (e.estado === "disponible") disponibles++;
         });
 
-        cardPrestadosEl.textContent = prestados;
+        const solicitudesPrestadas = solicitudesCache.filter(s => s.estado === "entregado").length;
+cardPrestadosEl.textContent = solicitudesPrestadas;
         cardDisponiblesEl.textContent = disponibles;
       });
     }
 
-    function cargarHistorialAdmin() {
-      onSnapshot(collection(db, "historial"), (snap) => {
-        historialCache = snap.docs;
-        aplicarFiltroDashboard();
-      });
-    }
+   function cargarHistorialAdmin() {
+
+  // 🔵 1. HISTORIAL COMPLETO (para dashboard)
+  onSnapshot(collection(db, "historial"), (snap) => {
+    historialCache = snap.docs;
+    aplicarFiltroDashboard();
+  });
+
+  // 🟣 2. HISTORIAL LIMITADO (solo UI)
+  const q = query(
+    collection(db, "historial"),
+    orderBy("fechaEntrega", "desc"),
+    limit(5)
+  );
+
+  onSnapshot(q, (snap) => {
+    historialAdminCont.innerHTML = "";
+
+    snap.docs.forEach(async (d) => {
+      const h = d.data();
+
+      const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
+      let equiposTexto = "Sin equipos";
+
+      if (equipoIds.length > 0) {
+        const nombres = [];
+        for (const eqId of equipoIds) {
+          const eqSnap = await getDoc(doc(db, "equipos", eqId));
+          if (eqSnap.exists()) {
+            const eq = eqSnap.data();
+            nombres.push(`${eq.nombre} (${eq.serie})`);
+          }
+        }
+        if (nombres.length > 0) {
+          equiposTexto = nombres.join(", ");
+        }
+      }
+
+      const div = document.createElement("div");
+      div.className = "border border-slate-700 rounded px-3 py-1";
+      div.innerHTML = `
+        <div class="font-medium">${equiposTexto}</div>
+        <div class="text-[10px] text-slate-400">
+          ${h.formadorNombre} (${h.formadorEmail})
+        </div>
+        <div class="text-[10px] text-slate-400">
+          Entrega: ${h.fechaEntrega ? h.fechaEntrega.toDate().toLocaleString() : "-"}
+        </div>
+      `;
+      historialAdminCont.appendChild(div);
+    });
+
+  });
+
+}
 
     function actualizarTarjetas() {
       const pendientes = solicitudesCache.filter(s => s.estado === "pendiente").length;
@@ -1103,11 +1198,9 @@
               nombres.push(`${eq.nombre} (${eq.serie})`);
             }
           }
-          if (nombres.length === 1) {
-            equiposTexto = nombres[0];
-          } else if (nombres.length > 1) {
-            equiposTexto = `${nombres[0]} + ${nombres.length - 1} equipos más`;
-          }
+          if (nombres.length > 0) {
+  equiposTexto = nombres.join(", ");
+}
         }
 
         const div = document.createElement("div");
@@ -1273,6 +1366,18 @@
         ? sol.equipoIds
         : (sol.equipoId ? [sol.equipoId] : []);
 
+for (const eqId of equipoIds) {
+  const eqSnap = await getDoc(doc(db, "equipos", eqId));
+
+  if (!eqSnap.exists()) continue;
+
+  const eq = eqSnap.data();
+
+  if (eq.estado === "prestado") {
+    alert(`❌ ERROR: El equipo ${eq.nombre} (${eq.serie}) ya está prestado.`);
+    return; 
+  }
+}
       const ahora = new Date();
 
       await updateDoc(solRef, { estado: "entregado", fechaEntrega: ahora });
