@@ -682,11 +682,18 @@
 
     function escucharMisSolicitudes() {
       const user = auth.currentUser;
-      onSnapshot(collection(db, "solicitudes"), async (snap) => {
+   
+
+const q = query(
+  collection(db, "solicitudes"),
+  where("formadorEmail", "==", user.email)
+);
+
+onSnapshot(q, async (snap) => {
         misSolicitudes.innerHTML = "";
         for (const docSnap of snap.docs) {
           const s = { id: docSnap.id, ...docSnap.data() };
-          if (s.formadorEmail !== user.email) continue;
+          
 
           const div = document.createElement("div");
           div.className = "border border-slate-700 rounded px-3 py-2";
@@ -1158,76 +1165,38 @@ cardPrestadosEl.textContent = solicitudesPrestadas;
       }
     }
 
-    async function aplicarFiltroDashboard() {
-      historialAdminCont.innerHTML = "";
-      if (!historialCache || historialCache.length === 0) {
-        actualizarChartsFromHistorial([]);
-        cardConsumoMesEl.textContent = "Fibra: 0 • RG6: 0 • RJ45: 0";
-        historialFiltradoCache = [];
-        return;
-      }
+         async function aplicarFiltroDashboard() {
+  historialAdminCont.innerHTML = "";
 
-      const { desde, hasta } = obtenerRangoFechasDesdeFiltro();
+  if (!historialCache || historialCache.length === 0) {
+    actualizarChartsFromHistorial([]);
+    cardConsumoMesEl.textContent = "Fibra: 0 • RG6: 0 • RJ45: 0";
+    historialFiltradoCache = [];
+    return;
+  }
 
-      const filtrados = historialCache.filter(d => {
-        if (!filtroDashboard.activo) return true;
-        const h = d.data();
-        let fecha = h.fechaEntrega;
-        if (!fecha) return false;
-        if (fecha.toDate) fecha = fecha.toDate();
-        const t = fecha.getTime();
-        if (desde && t < desde.getTime()) return false;
-        if (hasta && t > hasta.getTime()) return false;
-        return true;
-      });
+  const { desde, hasta } = obtenerRangoFechasDesdeFiltro();
 
-      historialFiltradoCache = filtrados;
-      await actualizarChartsFromHistorial(filtrados);
+  const filtrados = historialCache.filter(d => {
+    if (!filtroDashboard.activo) return true;
 
-      for (const d of filtrados) {
-        const h = d.data();
-        const equipoIds = Array.isArray(h.equipoIds) ? h.equipoIds : [];
-        let equiposTexto = "Sin equipos";
+    const h = d.data();
+    let fecha = h.fechaEntrega;
+    if (!fecha) return false;
+    if (fecha.toDate) fecha = fecha.toDate();
 
-        if (equipoIds.length > 0) {
-          const nombres = [];
-          for (const eqId of equipoIds) {
-            const eqSnap = await getDoc(doc(db, "equipos", eqId));
-            if (eqSnap.exists()) {
-              const eq = eqSnap.data();
-              nombres.push(`${eq.nombre} (${eq.serie})`);
-            }
-          }
-          if (nombres.length > 0) {
-  equiposTexto = nombres.join(", ");
+    const t = fecha.getTime();
+    if (desde && t < desde.getTime()) return false;
+    if (hasta && t > hasta.getTime()) return false;
+
+    return true;
+  });
+
+  historialFiltradoCache = filtrados;
+
+  await actualizarChartsFromHistorial(filtrados);
 }
-        }
-
-        const div = document.createElement("div");
-        div.className = "border border-slate-700 rounded px-3 py-1";
-        div.innerHTML = `
-          <div class="font-medium">${equiposTexto}</div>
-          <div class="text-[10px] text-slate-400">
-            ${h.formadorNombre} (${h.formadorEmail})
-          </div>
-          <div class="text-[10px] text-slate-400">
-            Entrega: ${h.fechaEntrega ? h.fechaEntrega.toDate().toLocaleString() : "-"}
-            ${h.fechaDevolucion ? " | Devolución: " + h.fechaDevolucion.toDate().toLocaleString() : ""}
-          </div>
-          <div class="text-[10px] text-slate-400">
-            Conectores pedidos – Fibra: ${h.fibraSolicitada || 0},
-            RG6: ${h.rg6Solicitada || 0},
-            RJ45: ${h.rj45Solicitada || 0}
-          </div>
-          <div class="text-[10px] text-emerald-400">
-            Consumo – Fibra: ${h.fibraUsada ?? 0},
-            RG6: ${h.rg6Usada ?? 0},
-            RJ45: ${h.rj45Usada ?? 0}
-          </div>
-        `;
-        historialAdminCont.appendChild(div);
-      }
-    }
+    
 
     async function actualizarChartsFromHistorial(docs) {
       const consumoPorMes = {};
