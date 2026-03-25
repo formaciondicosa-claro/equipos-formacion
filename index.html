@@ -621,6 +621,10 @@
       const seleccionados = equiposYaSeleccionados();
 
       equipoSelect.innerHTML = "";
+      const optDefault = document.createElement("option");
+optDefault.value = "";
+optDefault.textContent = "Seleccione equipo";
+equipoSelect.appendChild(optDefault);
       EQUIPOS_CACHE
         .filter(e => e.tipo === tipo && e.estado !== "prestado" && !seleccionados.includes(e.id))
         .forEach(e => {
@@ -629,6 +633,7 @@
           opt.textContent = `${e.nombre} (${e.serie})`;
           equipoSelect.appendChild(opt);
         });
+      equipoSelect.value = "";
     }
 
     btnEnviar.onclick = async () => {
