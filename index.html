@@ -995,11 +995,20 @@ document.getElementById("btn-limpiar-datos").onclick = async () => {
                 RG6: ${s.rg6Solicitada || 0},
                 RJ45: ${s.rj45Solicitada || 0}
               </div>
-              ${consumoTexto}
-              <button class="w-full mt-2 py-1 bg-emerald-600 rounded-full text-xs"
-                onclick="devolver('${s.id}')">
-                Marcar devuelto
-              </button>
+             ${(Array.isArray(s.equipoIds) && s.equipoIds.length > 0)
+  ? `
+    <button class="w-full mt-2 py-1 bg-emerald-600 rounded-full text-xs"
+      onclick="devolver('${s.id}')">
+      Marcar devuelto
+    </button>
+  `
+  : `
+    <div class="text-[10px] text-slate-400 mt-2">
+      ✅ Solicitud solo de material consumible
+    </div>
+  `
+}
+
             `;
             listaPrestados.appendChild(div);
           }
@@ -1497,6 +1506,21 @@ window.aprobar = async (solId) => {
       }
 
       alert("Consumo registrado correctamente.");
+      const solSnap = await getDoc(doc(db, "solicitudes", solId));
+const sol = solSnap.data();
+
+const tieneEquipos =
+  Array.isArray(sol.equipoIds) && sol.equipoIds.length > 0;
+
+// ✅ Si NO tiene equipos, cerrar sola la solicitud
+if (!tieneEquipos) {
+  const ahora = new Date();
+
+  await updateDoc(doc(db, "solicitudes", solId), {
+    estado: "devuelto",
+    fechaDevolucion: ahora
+  });
+}
     };
 
     async function exportarHistorialCSV() {
